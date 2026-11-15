@@ -1,0 +1,5 @@
+/* Our own styles, added on top of the theme. */
+
+.root {
+    -metro-accent: #0B6E99;
+}

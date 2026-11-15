@@ -1,6 +1,6 @@
 # Metro Management System — Design
 
-**Status:** proposed, waiting for the team lead's approval
+**Status:** approved by the team lead on 2026-11-15
 **Date:** 2026-11-15
 **Course:** Programming Language 2 (Java) — Project 8
 

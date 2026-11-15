@@ -9,4 +9,4 @@ role-based staff access.
 **Status:** planning.
 
 - [Design](docs/design.md) — what we are building and how it fits together
-- Build plan — `docs/plan.md`, written once the design is approved
+- [Build plan](docs/plan.md) — 27 tasks in 8 phases, from empty project to discussion day

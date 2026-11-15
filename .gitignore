@@ -21,3 +21,6 @@ out/
 .settings/
 Thumbs.db
 .DS_Store
+
+# Application data created at run time
+/data/

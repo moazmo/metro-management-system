@@ -1,0 +1,23 @@
+# College handouts and the team roster stay local only.
+# The roster holds other students' names and IDs - never publish it.
+*.xlsx
+.~lock.*
+/PL2 Project Guidelines and Cover Sheet.pdf
+/PL2_Projects_Ideas.pdf
+/team-private/
+
+# Build output
+target/
+build/
+out/
+*.class
+
+# IDE and OS files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+Thumbs.db
+.DS_Store

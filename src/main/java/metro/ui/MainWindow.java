@@ -34,6 +34,11 @@ public class MainWindow extends BorderPane {
     private final Button themeButton = new Button();
 
     public MainWindow(AppContext context, Runnable onLogout) {
+        this(context, onLogout, () -> { });
+    }
+
+    /** @param onReset what to do after the demo data was reset (the application starts over) */
+    public MainWindow(AppContext context, Runnable onLogout, Runnable onReset) {
         this.context = context;
         getStyleClass().add("main-window");
         buildNavigation();
@@ -44,7 +49,7 @@ public class MainWindow extends BorderPane {
         sidebarScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         sidebarScroll.getStyleClass().add("sidebar-scroll");
 
-        setTop(buildTopBar(onLogout));
+        setTop(buildTopBar(onLogout, onReset));
         setLeft(sidebarScroll);
         setCenter(content);
         open(getVisibleItems().get(0));
@@ -84,11 +89,13 @@ public class MainWindow extends BorderPane {
 
         items.add(new NavItem("ACCOUNT", "Staff users", "people", Permission.MANAGE_USERS,
                 () -> new StaffUsersScreen(context)));
+        items.add(new NavItem("ACCOUNT", "Audit log", "history", Permission.VIEW_AUDIT_LOG,
+                () -> new AuditLogScreen(context)));
         items.add(new NavItem("ACCOUNT", "My profile", "person", Permission.EDIT_OWN_PROFILE,
                 () -> new ProfileScreen(context)));
     }
 
-    private HBox buildTopBar(Runnable onLogout) {
+    private HBox buildTopBar(Runnable onLogout, Runnable onReset) {
         Label brand = new Label(MetroApp.TITLE, Icons.of("directions_subway", 22));
         brand.getStyleClass().add("brand");
 
@@ -110,6 +117,25 @@ public class MainWindow extends BorderPane {
             MenuItem myProfile = new MenuItem("My profile", Icons.of("person", 16));
             myProfile.setOnAction(event -> open(profile));
             userMenu.getItems().add(myProfile);
+        }
+        if (context.getSession().can(Permission.MANAGE_USERS)) {
+            MenuItem reset = new MenuItem("Reset demo data…", Icons.of("restore", 16));
+            reset.setOnAction(event -> {
+                javafx.scene.control.Alert ask = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.CONFIRMATION,
+                        "This deletes all current data and restores the demo data. This cannot be undone. Continue?",
+                        javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+                ask.setHeaderText(null);
+                ask.setTitle("Reset demo data");
+                ask.initOwner(getScene().getWindow());
+                ask.showAndWait();
+                if (ask.getResult() == javafx.scene.control.ButtonType.OK) {
+                    context.getAuditLog().record(context.getSession().getUser().getUsername(), "DEMO_RESET", "");
+                    metro.service.DemoData.reset(context.getDataDir());
+                    onReset.run();
+                }
+            });
+            userMenu.getItems().add(reset);
         }
         userMenu.getItems().add(logout);
         userMenu.setGraphic(Icons.of("person", 18));

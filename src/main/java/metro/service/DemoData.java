@@ -45,6 +45,9 @@ public final class DemoData {
     public static final String DEMO_PASSWORD = "metro123";
 
     private static final String NETWORK_FILE = "/metro/seed/network.txt";
+    private static final String[] BUSY_STATIONS = {
+        "Sadat", "Al-Shohadaa", "Attaba", "Nasser", "Cairo University", "Helwan", "Giza", "Maadi"
+    };
 
     private DemoData() {
     }
@@ -208,6 +211,15 @@ public final class DemoData {
         }
         Random random = new Random(42);
         List<Ticket> all = new ArrayList<>();
+        // Real metros have busy stations; half of the demo trips start or end at one of these.
+        List<Station> busy = new ArrayList<>();
+        for (Station station : stations) {
+            for (String name : BUSY_STATIONS) {
+                if (station.getName().equals(name)) {
+                    busy.add(station);
+                }
+            }
+        }
 
         for (int offset = -6; offset <= 0; offset++) {
             LocalDate day = now.toLocalDate().plusDays(offset);
@@ -229,10 +241,10 @@ public final class DemoData {
             LocalDateTime lastMoment = today ? now : day.atTime(23, 59);
 
             for (LocalDateTime soldAt : saleTimes) {
-                Station from = stations.get(random.nextInt(stations.size()));
-                Station to = stations.get(random.nextInt(stations.size()));
+                Station from = pickStation(stations, busy, random);
+                Station to = pickStation(stations, busy, random);
                 while (to.equals(from)) {
-                    to = stations.get(random.nextInt(stations.size()));
+                    to = pickStation(stations, busy, random);
                 }
                 int stops = planner.plan(from, to).getStops();
                 double chance = random.nextDouble();
@@ -252,6 +264,14 @@ public final class DemoData {
             }
         }
         tickets.saveAll(all);
+    }
+
+    /** A station for a demo sale: half the time one of the busy stations, otherwise any station. */
+    private static Station pickStation(List<Station> stations, List<Station> busy, Random random) {
+        if (!busy.isEmpty() && random.nextBoolean()) {
+            return busy.get(random.nextInt(busy.size()));
+        }
+        return stations.get(random.nextInt(stations.size()));
     }
 
     private static LocalDateTime earlier(LocalDateTime a, LocalDateTime b) {

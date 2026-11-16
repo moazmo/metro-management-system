@@ -10,6 +10,7 @@ import metro.model.StationStatus;
 import metro.repository.AuditLog;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.util.Check;
 
 /**
@@ -19,12 +20,15 @@ public class StationService {
 
     private final StationRepository stations;
     private final LineRepository lines;
+    private final TicketRepository tickets;
     private final Session session;
     private final AuditLog audit;
 
-    public StationService(StationRepository stations, LineRepository lines, Session session, AuditLog audit) {
+    public StationService(StationRepository stations, LineRepository lines, TicketRepository tickets,
+                          Session session, AuditLog audit) {
         this.stations = stations;
         this.lines = lines;
+        this.tickets = tickets;
         this.session = session;
         this.audit = audit;
     }
@@ -79,6 +83,7 @@ public class StationService {
      * Deletes a station.
      * Rule: a station that is on a line cannot be deleted; it must be taken
      * off the line first, or simply marked Closed.
+     * Rule: a station with ticket history cannot be deleted either.
      */
     public void delete(String id) {
         session.require(Permission.MANAGE_STATIONS);
@@ -94,6 +99,11 @@ public class StationService {
             }
             throw new ValidationException(station.getName() + " is on " + names
                     + ". Remove it from the line first, or mark it Closed.");
+        }
+        // Rule: a station that tickets were sold to or from is kept, so the ticket history stays readable.
+        if (tickets.existsForStation(station)) {
+            throw new ValidationException(station.getName()
+                    + " has ticket history and cannot be deleted. Mark it Closed instead.");
         }
         stations.delete(id);
         record("STATION_DELETED", station);

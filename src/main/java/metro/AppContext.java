@@ -7,16 +7,22 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import metro.exception.DataFileException;
 import metro.repository.AuditLog;
+import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.DemoData;
+import metro.service.FareService;
 import metro.service.LineService;
+import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
+import metro.service.TicketService;
+import metro.service.TieredFarePolicy;
 import metro.service.TrainService;
 import metro.service.TripService;
 import metro.service.UserService;
@@ -42,6 +48,8 @@ public class AppContext {
     private final LineRepository lines;
     private final TrainRepository trains;
     private final TripRepository trips;
+    private final FareTierRepository fareTiers;
+    private final TicketRepository tickets;
 
     private final AuthService authService;
     private final UserService userService;
@@ -49,6 +57,9 @@ public class AppContext {
     private final LineService lineService;
     private final TrainService trainService;
     private final TripService tripService;
+    private final RoutePlanner routePlanner;
+    private final FareService fareService;
+    private final TicketService ticketService;
 
     public AppContext(Path dataDir, Clock clock) {
         this.dataDir = dataDir;
@@ -72,20 +83,32 @@ public class AppContext {
         trains.load();
         trips = new TripRepository(dataDir.resolve("trips.txt"), trains, lines);
         trips.load();
+        fareTiers = new FareTierRepository(dataDir.resolve("fares.txt"));
+        fareTiers.load();
+        tickets = new TicketRepository(dataDir.resolve("tickets.txt"), stations);
+        tickets.load();
+
+        routePlanner = new RoutePlanner(lines);
 
         if (firstRun) {
             DemoData.seedUsers(users);
             DemoData.seedNetwork(stations, lines, trains);
-            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), LocalDateTime.now(clock));
+            DemoData.seedFares(fareTiers);
+            LocalDateTime now = LocalDateTime.now(clock).withNano(0);
+            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), now);
+            DemoData.seedTickets(tickets, stations.findAll(), routePlanner,
+                    new TieredFarePolicy(fareTiers.findAll()), users.findAll(), now);
         }
 
         // Services.
         authService = new AuthService(users, session, auditLog);
         userService = new UserService(users, session, auditLog);
-        stationService = new StationService(stations, lines, session, auditLog);
+        stationService = new StationService(stations, lines, tickets, session, auditLog);
         lineService = new LineService(lines, trips, session, auditLog);
         trainService = new TrainService(trains, trips, session, auditLog);
         tripService = new TripService(trips, session, auditLog, clock);
+        fareService = new FareService(fareTiers, session, auditLog);
+        ticketService = new TicketService(tickets, routePlanner, fareService, session, auditLog, clock);
     }
 
     public Path getDataDir() {
@@ -126,5 +149,17 @@ public class AppContext {
 
     public TripService getTripService() {
         return tripService;
+    }
+
+    public RoutePlanner getRoutePlanner() {
+        return routePlanner;
+    }
+
+    public FareService getFareService() {
+        return fareService;
+    }
+
+    public TicketService getTicketService() {
+        return ticketService;
     }
 }

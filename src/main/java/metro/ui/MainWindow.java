@@ -64,6 +64,15 @@ public class MainWindow extends BorderPane {
         items.add(new NavItem("SCHEDULE", "Trips", "schedule", Permission.VIEW_TRIPS,
                 () -> new TripsScreen(context)));
 
+        items.add(new NavItem("TICKETS", "Sell ticket", "confirmation_number", Permission.SELL_TICKETS,
+                () -> new SellTicketScreen(context)));
+        items.add(new NavItem("TICKETS", "Validate", "fact_check", Permission.VALIDATE_TICKETS,
+                () -> new ValidateTicketScreen(context)));
+        items.add(new NavItem("TICKETS", "Refunds", "undo", Permission.REFUND_TICKETS,
+                () -> new RefundsScreen(context)));
+        items.add(new NavItem("TICKETS", "Fares", "payments", Permission.MANAGE_FARES,
+                () -> new FaresScreen(context)));
+
         items.add(new NavItem("ACCOUNT", "Staff users", "people", Permission.MANAGE_USERS,
                 () -> new StaffUsersScreen(context)));
         items.add(new NavItem("ACCOUNT", "My profile", "person", Permission.EDIT_OWN_PROFILE,

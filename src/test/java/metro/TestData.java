@@ -17,16 +17,22 @@ import metro.model.TrainStatus;
 import metro.model.User;
 import metro.model.UserFactory;
 import metro.repository.AuditLog;
+import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
+import metro.service.DemoData;
+import metro.service.FareService;
 import metro.service.LineService;
 import metro.service.PasswordHasher;
+import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
+import metro.service.TicketService;
 import metro.service.TrainService;
 import metro.service.TripService;
 import metro.service.UserService;
@@ -61,6 +67,8 @@ public class TestData {
     public final LineRepository lines;
     public final TrainRepository trains;
     public final TripRepository trips;
+    public final FareTierRepository fareTiers;
+    public final TicketRepository tickets;
 
     public final AuthService auth;
     public final UserService userService;
@@ -68,6 +76,9 @@ public class TestData {
     public final LineService lineService;
     public final TrainService trainService;
     public final TripService tripService;
+    public final FareService fareService;
+    public final RoutePlanner planner;
+    public final TicketService ticketService;
 
     public final User admin, controller, agent, supervisor;
     public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
@@ -89,6 +100,11 @@ public class TestData {
         trains.load();
         trips = new TripRepository(dir.resolve("trips.txt"), trains, lines);
         trips.load();
+        fareTiers = new FareTierRepository(dir.resolve("fares.txt"));
+        fareTiers.load();
+        DemoData.seedFares(fareTiers); // up to 9 stops 8.00, 16 -> 10.00, 23 -> 15.00, 39 -> 20.00
+        tickets = new TicketRepository(dir.resolve("tickets.txt"), stations);
+        tickets.load();
 
         admin = addUser(Role.ADMIN, "admin", "System Admin");
         controller = addUser(Role.OPERATIONS_CONTROLLER, "controller", "Operations Desk");
@@ -117,10 +133,13 @@ public class TestData {
 
         auth = new AuthService(users, session, audit);
         userService = new UserService(users, session, audit);
-        stationService = new StationService(stations, lines, session, audit);
+        stationService = new StationService(stations, lines, tickets, session, audit);
         lineService = new LineService(lines, trips, session, audit);
         trainService = new TrainService(trains, trips, session, audit);
         tripService = new TripService(trips, session, audit, clock);
+        fareService = new FareService(fareTiers, session, audit);
+        planner = new RoutePlanner(lines);
+        ticketService = new TicketService(tickets, planner, fareService, session, audit, clock);
     }
 
     private User addUser(Role role, String username, String fullName) {
@@ -159,6 +178,15 @@ public class TestData {
     /** A time on a given day of November 2026. */
     public static LocalDateTime on(int day, int hour, int minute) {
         return LocalDateTime.of(2026, 11, day, hour, minute);
+    }
+
+    /** Tickets read again from the files by brand-new repositories, as after a restart. */
+    public TicketRepository reloadedTickets() {
+        StationRepository freshStations = new StationRepository(dir.resolve("stations.txt"));
+        freshStations.load();
+        TicketRepository freshTickets = new TicketRepository(dir.resolve("tickets.txt"), freshStations);
+        freshTickets.load();
+        return freshTickets;
     }
 
     /** Lines read again from the files by brand-new repositories, as after a restart. */

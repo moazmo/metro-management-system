@@ -106,4 +106,17 @@ class StationServiceTest {
         ValidationException e = assertThrows(ValidationException.class, () -> service.create("   ", ""));
         assertEquals("Station name is required", e.getMessage());
     }
+
+    @Test
+    void stationWithTicketsCannotBeDeleted() {
+        data.loginAs(data.agent);
+        data.ticketService.sell(data.stationA, data.stationG, metro.model.TicketType.STANDARD, 1);
+        data.loginAs(data.admin);
+        // take G off its line, so only the ticket still refers to it
+        data.lineService.update(data.blue.getId(), "Blue", "#1976D2",
+                java.util.List.of(data.stationF, data.stationC, data.stationH));
+        ValidationException e = assertThrows(ValidationException.class,
+                () -> service.delete(data.stationG.getId()));
+        assertEquals("G has ticket history and cannot be deleted. Mark it Closed instead.", e.getMessage());
+    }
 }

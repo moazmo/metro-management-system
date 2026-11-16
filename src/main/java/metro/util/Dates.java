@@ -18,6 +18,8 @@ public final class Dates {
     public static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
     /** Short date and time for tables, for example "15 Nov 14:05". */
     public static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd MMM HH:mm", Locale.ENGLISH);
+    /** Day and month for chart labels, for example "15 Nov". */
+    public static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
     /** Plain date for reports and exports, for example "2026-11-15". */
     public static final DateTimeFormatter ISO_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     /** Plain date-time for reports and exports, for example "2026-11-15 14:05". */

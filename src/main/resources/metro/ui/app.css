@@ -252,3 +252,31 @@
     -fx-text-fill: -color-danger-fg;
     -fx-icon-color: -color-danger-fg;
 }
+
+/* ---------- reports ---------- */
+.counter {
+    -fx-padding: 12 18 12 18;
+    -fx-min-width: 150;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: -color-border-default;
+}
+.counter-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+.chart-area {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: -color-border-default;
+    -fx-padding: 6;
+}
+.chart-bar {
+    -fx-bar-fill: -metro-accent;
+}
+
+.journey-chart .axis:left .tick-label {
+    -fx-font-size: 10px;
+}

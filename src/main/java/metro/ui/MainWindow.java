@@ -73,6 +73,13 @@ public class MainWindow extends BorderPane {
         items.add(new NavItem("TICKETS", "Fares", "payments", Permission.MANAGE_FARES,
                 () -> new FaresScreen(context)));
 
+        items.add(new NavItem("REPORTS", "Trip report", "pie_chart", Permission.VIEW_REPORTS,
+                () -> new TripReportScreen(context)));
+        items.add(new NavItem("REPORTS", "Ticket report", "bar_chart", Permission.VIEW_REPORTS,
+                () -> new TicketReportScreen(context)));
+        items.add(new NavItem("REPORTS", "Revenue report", "show_chart", Permission.VIEW_REPORTS,
+                () -> new RevenueReportScreen(context)));
+
         items.add(new NavItem("ACCOUNT", "Staff users", "people", Permission.MANAGE_USERS,
                 () -> new StaffUsersScreen(context)));
         items.add(new NavItem("ACCOUNT", "My profile", "person", Permission.EDIT_OWN_PROFILE,

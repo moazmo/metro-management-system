@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +40,7 @@ import metro.ui.LineFormDialog;
 import metro.ui.LoginScreen;
 import metro.ui.MainWindow;
 import metro.ui.NavItem;
+import metro.ui.ReportScreen;
 import metro.ui.Theme;
 import metro.ui.TripFormDialog;
 import metro.ui.UserFormDialog;
@@ -131,6 +133,48 @@ public class Screenshots extends Application {
                 check("a refused save keeps the dialog open", openDialog.isShowing());
                 check("a refused save stores nothing", !fileHasLine("users.txt", "USR-005"));
                 saveDialog("dialog-add-user");
+            });
+        }
+        if (username.equals("admin")) {
+            list.add(() -> window.open(window.findItem("Trip report")));
+            list.add(() -> {
+                ((ComboBox<String>) scene.lookup("#report-status")).setValue("Delayed");
+                button("#report-generate").fire();
+            });
+            list.add(() -> {
+                boolean allDelayed = !reportTable().getItems().isEmpty();
+                for (String[] row : reportTable().getItems()) {
+                    allDelayed = allDelayed && row[7].equals("Delayed");
+                }
+                check("the trip report filtered on Delayed shows only delayed trips", allDelayed);
+                ((DatePicker) scene.lookup("#report-from")).setValue(LocalDate.now().plusDays(3));
+                button("#report-generate").fire();
+            });
+            list.add(() -> {
+                check("a start date after the end date is refused with a message",
+                        bannerText().equals("The start date must not be after the end date"));
+                save("admin-trip-report-refused");
+                window.open(window.findItem("Ticket report"));
+            });
+            list.add(() -> {
+                try {
+                    Path csv = Files.createTempFile("ticket-report", ".csv");
+                    ((ReportScreen) scene.lookup(".screen")).exportTo(csv);
+                    List<String> exported = Files.readAllLines(csv, StandardCharsets.UTF_8);
+                    check("the ticket report exports a header and rows",
+                            exported.get(0).equals("From,To,Tickets,Revenue") && exported.size() > 1);
+                } catch (IOException e) {
+                    check("the ticket report exports a header and rows", false);
+                }
+                window.open(window.findItem("Revenue report"));
+                ((DatePicker) scene.lookup("#report-from")).setValue(LocalDate.of(2020, 1, 1));
+                ((DatePicker) scene.lookup("#report-to")).setValue(LocalDate.of(2020, 1, 3));
+                button("#report-generate").fire();
+            });
+            list.add(() -> {
+                check("a period with no sales says so", scene.lookup(".chart-area").lookup(".label") != null
+                        && reportTable().getItems().size() == 4);
+                save("admin-revenue-report-empty");
             });
         }
         if (username.equals("admin")) {
@@ -276,6 +320,16 @@ public class Screenshots extends Application {
             }
         }
         return fields;
+    }
+
+    @SuppressWarnings("unchecked")
+    private TableView<String[]> reportTable() {
+        return (TableView<String[]>) scene.lookup("#report-table");
+    }
+
+    private String bannerText() {
+        javafx.scene.Node banner = scene.lookup(".banner");
+        return banner != null && banner.isVisible() ? ((javafx.scene.control.Label) banner).getText() : "";
     }
 
     private TableView<?> table() {

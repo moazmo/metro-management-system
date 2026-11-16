@@ -20,6 +20,7 @@ import metro.repository.AuditLog;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
 import metro.repository.TrainRepository;
+import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.PasswordHasher;
@@ -66,6 +67,8 @@ public class TestData {
     public final TrainService trainService;
     public final Train train1, train2, train3;
 
+    public final TripRepository trips;
+
     public TestData(Path dir) {
         this.dir = dir;
         audit = new AuditLog(dir.resolve("audit.log"), clock);
@@ -106,6 +109,14 @@ public class TestData {
         train2 = addTrain("T-102", 1200, TrainStatus.ACTIVE);
         train3 = addTrain("T-103", 1000, TrainStatus.MAINTENANCE);
         trainService = new TrainService(trains, session, audit);
+
+        trips = new TripRepository(dir.resolve("trips.txt"), trains, lines);
+        trips.load();
+    }
+
+    /** A time on the fixture's "today", 2026-11-15. */
+    public static LocalDateTime at(int hour, int minute) {
+        return LocalDateTime.of(2026, 11, 15, hour, minute);
     }
 
     private Train addTrain(String code, int capacity, TrainStatus status) {

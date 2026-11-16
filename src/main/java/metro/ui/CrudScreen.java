@@ -54,10 +54,7 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
         addButton = new Button(addButtonLabel, Icons.of("add", 16));
         addButton.getStyleClass().add("accent");
         addButton.setMinWidth(Region.USE_PREF_SIZE);
-        addButton.setOnAction(event -> {
-            clearMessage();
-            openForm(null);
-        });
+        addButton.setOnAction(event -> run(() -> openForm(null)));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

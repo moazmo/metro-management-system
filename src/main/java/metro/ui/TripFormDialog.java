@@ -47,9 +47,11 @@ public class TripFormDialog extends FormDialog {
             trains.add(existing.getTrain());
         }
 
-        line = addChoice("Line", lines, existing == null ? lines.get(0) : existing.getLine());
+        // With no lines or no active trains the choices stay empty; saving then explains what is missing.
+        line = addChoice("Line", lines, existing != null ? existing.getLine() : (lines.isEmpty() ? null : lines.get(0)));
         direction = addChoice("Direction", new ArrayList<>(), null);
-        train = addChoice("Train", trains, existing == null ? trains.get(0) : existing.getTrain());
+        train = addChoice("Train", trains,
+                existing != null ? existing.getTrain() : (trains.isEmpty() ? null : trains.get(0)));
         date.setValue(existing == null
                 ? LocalDate.now(context.getClock()).plusDays(1)
                 : existing.getDeparture().toLocalDate());
@@ -75,6 +77,10 @@ public class TripFormDialog extends FormDialog {
     /** The two directions are shown as "first station → last station" and the reverse. */
     private void fillDirections() {
         Line chosen = line.getValue();
+        if (chosen == null) {
+            direction.getItems().clear();
+            return;
+        }
         int selected = Math.max(0, direction.getSelectionModel().getSelectedIndex());
         direction.getItems().setAll(
                 chosen.getFirstStation().getName() + " → " + chosen.getLastStation().getName(),
@@ -84,6 +90,9 @@ public class TripFormDialog extends FormDialog {
 
     /** Fills the arrival field from the service's suggestion when the departure is a valid time. */
     private void suggestArrival() {
+        if (line.getValue() == null) {
+            return;
+        }
         try {
             LocalDateTime start = LocalDate.of(2000, 1, 1).atTime(parseTime(departure.getText()));
             arrival.setText(Dates.time(service.suggestArrival(line.getValue(), start)));
@@ -102,6 +111,13 @@ public class TripFormDialog extends FormDialog {
 
     @Override
     protected void save() {
+        // Say what is really missing before complaining about the times.
+        if (line.getValue() == null) {
+            throw new ValidationException("Add a line before scheduling trips");
+        }
+        if (train.getValue() == null) {
+            throw new ValidationException("There is no active train to schedule");
+        }
         if (date.getValue() == null) {
             throw new ValidationException("Date is required");
         }

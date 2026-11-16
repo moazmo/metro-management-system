@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TableView;
@@ -30,6 +31,8 @@ import javax.imageio.ImageIO;
 import metro.AppContext;
 import metro.util.Dates;
 import metro.model.Line;
+import metro.model.Station;
+import metro.model.TicketType;
 import metro.model.Trip;
 import metro.service.DemoData;
 import metro.ui.LineFormDialog;
@@ -65,6 +68,7 @@ public class Screenshots extends Application {
     private String suffix = "";
     private Dialog<?> openDialog;
     private Trip conflictTarget;
+    private String scriptedTicketId;
 
     public static void main(String[] args) {
         launch(args);
@@ -181,6 +185,52 @@ public class Screenshots extends Application {
             });
         }
         if (username.equals("agent")) {
+            list.add(() -> window.open(window.findItem("Sell ticket")));
+            list.add(() -> {
+                stationChoice("#sell-from").setValue(station("Helwan"));
+                stationChoice("#sell-to").setValue(station("Cairo University"));
+            });
+            list.add(() -> {
+                check("choosing a journey shows a total fare", scene.lookup("#sell-total") != null);
+                save("agent-sell-ticket-quote");
+                button("#sell-button").fire();
+            });
+            list.add(() -> {
+                scriptedTicketId = context.getTicketService().mySalesToday().get(0).getId();
+                check("a sale is written to tickets.txt", fileHasLine("tickets.txt", scriptedTicketId, "|VALID|"));
+                save("agent-sell-ticket-sold");
+            });
+            list.add(() -> window.open(window.findItem("Validate")));
+            list.add(() -> {
+                text("#validate-code").setText(scriptedTicketId.toLowerCase());
+                button("#validate-button").fire();
+            });
+            list.add(() -> {
+                check("a validated ticket is marked USED in tickets.txt",
+                        fileHasLine("tickets.txt", scriptedTicketId, "|USED|"));
+                save("agent-validate-accepted");
+                text("#validate-code").setText(scriptedTicketId);
+                button("#validate-button").fire();
+            });
+            list.add(() -> save("agent-validate-rejected"));
+        }
+        if (username.equals("supervisor")) {
+            list.add(() -> {
+                scriptedTicketId = context.getTicketService()
+                        .sell(station("Helwan"), station("Sadat"), TicketType.STUDENT, 1).get(0).getId();
+                window.open(window.findItem("Refunds"));
+            });
+            list.add(() -> {
+                text("#refund-code").setText(scriptedTicketId);
+                button("#refund-find").fire();
+            });
+            list.add(() -> {
+                check("a same-day unused ticket is offered a refund",
+                        scene.lookup("#refund-button") != null && !scene.lookup("#refund-button").isDisabled());
+                save("supervisor-refunds-eligible");
+            });
+        }
+        if (username.equals("agent")) {
             list.add(() -> window.open(window.findItem("My profile")));
             list.add(() -> {
                 text("#profile-phone").setText("0123456789");
@@ -199,6 +249,19 @@ public class Screenshots extends Application {
         return (TextField) scene.lookup(id);
     }
 
+    private ComboBox<Station> stationChoice(String id) {
+        return (ComboBox<Station>) scene.lookup(id);
+    }
+
+    private Station station(String name) {
+        for (Station station : context.getStationService().listAll()) {
+            if (station.getName().equals(name)) {
+                return station;
+            }
+        }
+        throw new IllegalStateException("No station named " + name);
+    }
+
     private javafx.scene.Node dialogNode(String selector) {
         return openDialog.getDialogPane().lookup(selector);
     }
@@ -208,7 +271,7 @@ public class Screenshots extends Application {
         List<TextField> fields = new ArrayList<>();
         for (javafx.scene.Node node : openDialog.getDialogPane().lookupAll(".text-field")) {
             if (node instanceof TextField && !(node.getParent() instanceof DatePicker)
-                    && !(node.getParent() instanceof javafx.scene.control.ComboBox)) {
+                    && !(node.getParent() instanceof ComboBox)) {
                 fields.add((TextField) node);
             }
         }

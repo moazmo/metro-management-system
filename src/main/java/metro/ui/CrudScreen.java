@@ -37,6 +37,7 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
     private final TableView<T> table = new TableView<>();
     private final HBox rowActionBar = new HBox(8);
     private final Label emptyText = new Label("Nothing to show yet.");
+    private final VBox body;
     private boolean built = false;
 
     protected CrudScreen(AppContext context, String title, String addButtonLabel) {
@@ -77,7 +78,8 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
         rowActionBar.setAlignment(Pos.CENTER_LEFT);
         rowActionBar.setMinHeight(36);
 
-        setContent(new VBox(12, toolbar, table, rowActionBar));
+        body = new VBox(12, toolbar, table, rowActionBar);
+        setContent(body);
     }
 
     // ----- what a subclass provides -----
@@ -166,6 +168,11 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
             refresh();
         });
         return button;
+    }
+
+    /** Places something (a note, a summary) under the table and its buttons. */
+    protected final void setFooter(Node footer) {
+        body.getChildren().add(footer);
     }
 
     protected final void setEmptyText(String text) {

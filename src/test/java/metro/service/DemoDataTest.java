@@ -15,6 +15,7 @@ import metro.AppContext;
 import metro.MutableClock;
 import metro.model.Line;
 import metro.model.Station;
+import metro.model.Ticket;
 import metro.model.Train;
 import metro.model.TrainStatus;
 import metro.model.Trip;
@@ -253,5 +254,94 @@ class DemoDataTest {
         assertEquals("Sadat", journey.getLegs().get(0).getTo().getName());
         // Helwan to Sadat is 18 stops on Line 1, Sadat to Cairo University 4 stops on Line 2
         assertEquals(22, journey.getStops());
+    }
+
+    // ----- demo ticket sales (Task 19) -----
+
+    private List<Ticket> tickets() {
+        metro.repository.TicketRepository repository =
+                new metro.repository.TicketRepository(dir.resolve("tickets.txt"), reloadedStations());
+        repository.load();
+        return repository.findAll();
+    }
+
+    private metro.repository.StationRepository reloadedStations() {
+        metro.repository.StationRepository stations =
+                new metro.repository.StationRepository(dir.resolve("stations.txt"));
+        stations.load();
+        return stations;
+    }
+
+    @Test
+    void everyDayHasSales() {
+        LocalDate today = LocalDate.of(2026, 11, 15);
+        for (int offset = -6; offset <= 0; offset++) {
+            int count = 0;
+            for (Ticket ticket : tickets()) {
+                if (ticket.getSoldAt().toLocalDate().equals(today.plusDays(offset))) {
+                    count++;
+                }
+            }
+            assertTrue(count >= 40 && count <= 80, "day " + offset + " has " + count + " tickets");
+        }
+    }
+
+    @Test
+    void noDemoTicketIsSoldInTheFuture() {
+        LocalDateTime now = LocalDateTime.of(2026, 11, 15, 10, 0);
+        for (Ticket ticket : tickets()) {
+            assertFalse(ticket.getSoldAt().isAfter(now), ticket.getId());
+        }
+    }
+
+    @Test
+    void faresMatchThePolicy() {
+        FarePolicy policy = context.getFareService().currentPolicy();
+        for (Ticket ticket : tickets()) {
+            assertEquals(policy.baseFare(ticket.getStops()), ticket.getBaseFare(), ticket.getId());
+            assertEquals(context.getRoutePlanner().plan(ticket.getFrom(), ticket.getTo()).getStops(),
+                    ticket.getStops(), ticket.getId());
+        }
+    }
+
+    @Test
+    void refundsAreSameDay() {
+        int refunded = 0;
+        for (Ticket ticket : tickets()) {
+            if (ticket.getStatus() == metro.model.TicketStatus.REFUNDED) {
+                refunded++;
+                assertEquals(ticket.getSoldAt().toLocalDate(), ticket.getRefundedAt().toLocalDate());
+                assertFalse(ticket.getRefundedAt().isBefore(ticket.getSoldAt()));
+                assertEquals("USR-004", ticket.getRefundedById());
+            }
+        }
+        assertTrue(refunded >= 1);
+    }
+
+    @Test
+    void usedAfterSold() {
+        int used = 0;
+        for (Ticket ticket : tickets()) {
+            if (ticket.getStatus() == metro.model.TicketStatus.USED) {
+                used++;
+                assertFalse(ticket.getUsedAt().isBefore(ticket.getSoldAt()), ticket.getId());
+                assertEquals(ticket.getSoldAt().toLocalDate(), ticket.getUsedAt().toLocalDate(), ticket.getId());
+            }
+        }
+        assertTrue(used > 100);
+    }
+
+    @Test
+    void demoTicketsAreSoldByTheTicketStaff() {
+        for (Ticket ticket : tickets()) {
+            assertTrue(ticket.getSoldById().equals("USR-003") || ticket.getSoldById().equals("USR-004"));
+        }
+    }
+
+    @Test
+    void ticketSeedingIsRepeatable(@TempDir Path other) throws java.io.IOException {
+        new AppContext(other, clock);
+        assertEquals(java.nio.file.Files.readAllLines(dir.resolve("tickets.txt")),
+                java.nio.file.Files.readAllLines(other.resolve("tickets.txt")));
     }
 }

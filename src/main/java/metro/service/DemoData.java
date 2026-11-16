@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import metro.exception.DataFileException;
 import metro.model.Direction;
 import metro.model.FareTier;
@@ -16,14 +17,19 @@ import metro.model.Line;
 import metro.model.Role;
 import metro.model.Station;
 import metro.model.StationStatus;
+import metro.model.Ticket;
+import metro.model.TicketFactory;
+import metro.model.TicketType;
 import metro.model.Train;
 import metro.model.TrainStatus;
 import metro.model.Trip;
 import metro.model.TripStatus;
+import metro.model.User;
 import metro.model.UserFactory;
 import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
@@ -178,6 +184,78 @@ public final class DemoData {
             }
         }
         trips.saveAll(all);
+    }
+
+    /**
+     * A week of ticket sales ending now: 40 to 80 tickets a day between
+     * random pairs of stations. Most tickets of past days were used, a few
+     * were refunded on the day of sale, the rest simply expired.
+     *
+     * The random numbers start from a fixed seed, so the same moment always
+     * produces the same sales.
+     */
+    public static void seedTickets(TicketRepository tickets, List<Station> stations, RoutePlanner planner,
+                                   FarePolicy policy, List<User> staff, LocalDateTime now) {
+        List<User> sellers = new ArrayList<>();
+        User refunder = null;
+        for (User user : staff) {
+            if (user.getRole() == Role.TICKET_AGENT || user.getRole() == Role.STATION_SUPERVISOR) {
+                sellers.add(user);
+            }
+            if (refunder == null && user.getRole() == Role.STATION_SUPERVISOR) {
+                refunder = user;
+            }
+        }
+        Random random = new Random(42);
+        List<Ticket> all = new ArrayList<>();
+
+        for (int offset = -6; offset <= 0; offset++) {
+            LocalDate day = now.toLocalDate().plusDays(offset);
+            boolean today = offset == 0;
+            // Sales run from 06:00 to 22:00; today they stop at the present moment.
+            LocalDateTime opens = day.atTime(6, 0);
+            LocalDateTime closes = today ? now : day.atTime(22, 0);
+            if (!closes.isAfter(opens)) {
+                opens = day.atStartOfDay();
+            }
+            int windowMinutes = (int) Math.max(1, java.time.Duration.between(opens, closes).toMinutes());
+
+            int count = 40 + random.nextInt(41);
+            List<LocalDateTime> saleTimes = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                saleTimes.add(opens.plusMinutes(random.nextInt(windowMinutes)));
+            }
+            java.util.Collections.sort(saleTimes);
+            LocalDateTime lastMoment = today ? now : day.atTime(23, 59);
+
+            for (LocalDateTime soldAt : saleTimes) {
+                Station from = stations.get(random.nextInt(stations.size()));
+                Station to = stations.get(random.nextInt(stations.size()));
+                while (to.equals(from)) {
+                    to = stations.get(random.nextInt(stations.size()));
+                }
+                int stops = planner.plan(from, to).getStops();
+                double chance = random.nextDouble();
+                TicketType type = chance < 0.70 ? TicketType.STANDARD
+                        : chance < 0.90 ? TicketType.STUDENT : TicketType.SENIOR;
+                User seller = sellers.get(random.nextInt(sellers.size()));
+                Ticket ticket = TicketFactory.create(type, tickets.nextId(), from, to, stops,
+                        policy.baseFare(stops), seller.getId(), soldAt);
+
+                double fate = random.nextDouble();
+                if (fate < (today ? 0.50 : 0.90)) {
+                    ticket.markUsed(earlier(soldAt.plusMinutes(5 + random.nextInt(116)), lastMoment));
+                } else if (!today && fate < 0.93 && refunder != null) {
+                    ticket.refund(refunder.getId(), earlier(soldAt.plusMinutes(1 + random.nextInt(30)), lastMoment));
+                }
+                all.add(ticket);
+            }
+        }
+        tickets.saveAll(all);
+    }
+
+    private static LocalDateTime earlier(LocalDateTime a, LocalDateTime b) {
+        return a.isBefore(b) ? a : b;
     }
 
     /** The position of the first train that is free at the given time. */

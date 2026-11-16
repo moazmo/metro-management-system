@@ -22,6 +22,7 @@ import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
 import metro.service.TicketService;
+import metro.service.TieredFarePolicy;
 import metro.service.TrainService;
 import metro.service.TripService;
 import metro.service.UserService;
@@ -87,11 +88,16 @@ public class AppContext {
         tickets = new TicketRepository(dataDir.resolve("tickets.txt"), stations);
         tickets.load();
 
+        routePlanner = new RoutePlanner(lines);
+
         if (firstRun) {
             DemoData.seedUsers(users);
             DemoData.seedNetwork(stations, lines, trains);
             DemoData.seedFares(fareTiers);
-            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), LocalDateTime.now(clock));
+            LocalDateTime now = LocalDateTime.now(clock).withNano(0);
+            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), now);
+            DemoData.seedTickets(tickets, stations.findAll(), routePlanner,
+                    new TieredFarePolicy(fareTiers.findAll()), users.findAll(), now);
         }
 
         // Services.
@@ -101,7 +107,6 @@ public class AppContext {
         lineService = new LineService(lines, trips, session, auditLog);
         trainService = new TrainService(trains, trips, session, auditLog);
         tripService = new TripService(trips, session, auditLog, clock);
-        routePlanner = new RoutePlanner(lines);
         fareService = new FareService(fareTiers, session, auditLog);
         ticketService = new TicketService(tickets, routePlanner, fareService, session, auditLog, clock);
     }

@@ -9,12 +9,14 @@ import metro.exception.DataFileException;
 import metro.repository.AuditLog;
 import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
+import metro.repository.Settings;
 import metro.repository.StationRepository;
 import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
+import metro.service.DashboardService;
 import metro.service.DemoData;
 import metro.service.FareService;
 import metro.service.LineService;
@@ -43,6 +45,7 @@ public class AppContext {
     private final Clock clock;
     private final Session session = new Session();
     private final AuditLog auditLog;
+    private final Settings settings;
 
     private final UserRepository users;
     private final StationRepository stations;
@@ -62,6 +65,7 @@ public class AppContext {
     private final FareService fareService;
     private final TicketService ticketService;
     private final ReportService reportService;
+    private final DashboardService dashboardService;
 
     public AppContext(Path dataDir, Clock clock) {
         this.dataDir = dataDir;
@@ -75,6 +79,7 @@ public class AppContext {
 
         // Repositories, loaded in an order where everything a record refers to is already there.
         auditLog = new AuditLog(dataDir.resolve("audit.log"), clock);
+        settings = new Settings(dataDir.resolve("settings.txt"));
         users = new UserRepository(dataDir.resolve("users.txt"));
         users.load();
         stations = new StationRepository(dataDir.resolve("stations.txt"));
@@ -112,6 +117,7 @@ public class AppContext {
         fareService = new FareService(fareTiers, session, auditLog);
         ticketService = new TicketService(tickets, routePlanner, fareService, session, auditLog, clock);
         reportService = new ReportService(trips, tickets, session, auditLog);
+        dashboardService = new DashboardService(trips, tickets, session, clock);
     }
 
     public Path getDataDir() {
@@ -168,5 +174,13 @@ public class AppContext {
 
     public ReportService getReportService() {
         return reportService;
+    }
+
+    public DashboardService getDashboardService() {
+        return dashboardService;
+    }
+
+    public Settings getSettings() {
+        return settings;
     }
 }

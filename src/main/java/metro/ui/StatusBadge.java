@@ -13,5 +13,6 @@ public class StatusBadge extends Label {
     public StatusBadge(String text, Tone tone) {
         super(text);
         getStyleClass().addAll("badge", "badge-" + tone.name().toLowerCase());
+        setMinWidth(USE_PREF_SIZE); // a badge never gets cut short; the text beside it gives way
     }
 }

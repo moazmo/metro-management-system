@@ -98,6 +98,7 @@ public class MainWindow extends BorderPane {
         themeButton.getStyleClass().addAll("flat", "button-icon");
         themeButton.setOnAction(event -> {
             Theme.toggle(getScene());
+            context.getSettings().set("theme", Theme.isDark() ? "dark" : "light");
             refreshThemeButton();
         });
         refreshThemeButton();

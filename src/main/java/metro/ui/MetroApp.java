@@ -41,6 +41,8 @@ public class MetroApp extends Application {
             return;
         }
 
+        // the last chosen look, light or dark, is kept in settings.txt
+        Theme.apply(scene, "dark".equals(context.getSettings().get("theme", "light")));
         stage.setTitle(TITLE);
         stage.setMinWidth(1100);
         stage.setMinHeight(700);

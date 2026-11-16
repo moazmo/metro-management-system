@@ -7,14 +7,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Arrays;
+import metro.model.Line;
 import metro.model.Role;
+import metro.model.Station;
+import metro.model.StationStatus;
 import metro.model.User;
 import metro.model.UserFactory;
 import metro.repository.AuditLog;
+import metro.repository.LineRepository;
+import metro.repository.StationRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.PasswordHasher;
+import metro.service.LineService;
 import metro.service.Session;
+import metro.service.StationService;
 import metro.service.UserService;
 
 /**
@@ -41,6 +49,15 @@ public class TestData {
     public final User agent;
     public final User supervisor;
 
+    // The fixture network:  Red A B C D E  ·  Blue F C G H  ·  Green H E I  ·  Island X Y (not connected)
+    public final StationRepository stations;
+    public final LineRepository lines;
+    public final StationService stationService;
+    public final LineService lineService;
+    public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
+    public final Station stationX, stationY;
+    public final Line red, blue, green, island;
+
     public TestData(Path dir) {
         this.dir = dir;
         audit = new AuditLog(dir.resolve("audit.log"), clock);
@@ -52,6 +69,49 @@ public class TestData {
         supervisor = addUser(Role.STATION_SUPERVISOR, "supervisor", "Station Supervisor");
         auth = new AuthService(users, session, audit);
         userService = new UserService(users, session, audit);
+
+        stations = new StationRepository(dir.resolve("stations.txt"));
+        stations.load();
+        lines = new LineRepository(dir.resolve("lines.txt"), stations);
+        lines.load();
+        stationA = addStation("A");
+        stationB = addStation("B");
+        stationC = addStation("C");
+        stationD = addStation("D");
+        stationE = addStation("E");
+        stationF = addStation("F");
+        stationG = addStation("G");
+        stationH = addStation("H");
+        stationI = addStation("I");
+        stationX = addStation("X");
+        stationY = addStation("Y");
+        red = addLine("Red", "#D32F2F", stationA, stationB, stationC, stationD, stationE);
+        blue = addLine("Blue", "#1976D2", stationF, stationC, stationG, stationH);
+        green = addLine("Green", "#388E3C", stationH, stationE, stationI);
+        island = addLine("Island", "#757575", stationX, stationY);
+        stationService = new StationService(stations, lines, session, audit);
+        lineService = new LineService(lines, session, audit);
+    }
+
+    private Station addStation(String name) {
+        Station station = new Station(stations.nextId(), name, "", StationStatus.OPEN);
+        stations.save(station);
+        return station;
+    }
+
+    private Line addLine(String name, String colour, Station... onLine) {
+        Line line = new Line(lines.nextId(), name, colour, Arrays.asList(onLine));
+        lines.save(line);
+        return line;
+    }
+
+    /** Lines read again from the files by brand-new repositories, as after a restart. */
+    public LineRepository reloadedLines() {
+        StationRepository freshStations = new StationRepository(dir.resolve("stations.txt"));
+        freshStations.load();
+        LineRepository freshLines = new LineRepository(dir.resolve("lines.txt"), freshStations);
+        freshLines.load();
+        return freshLines;
     }
 
     private User addUser(Role role, String username, String fullName) {

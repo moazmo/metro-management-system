@@ -157,4 +157,18 @@ class StationRepositoryTest {
         DataFileException e = assertThrows(DataFileException.class, () -> reload());
         assertTrue(e.getMessage().contains("stations.txt line 3"), e.getMessage());
     }
+
+    @Test
+    void saveAllStoresEveryRecordInOneGo() {
+        Station a = new Station(repo.nextId(), "A", "", StationStatus.OPEN);
+        Station b = new Station(repo.nextId(), "B", "", StationStatus.OPEN);
+        repo.saveAll(List.of(a, b));
+        StationRepository loaded = reload();
+        assertEquals(2, loaded.findAll().size());
+        assertEquals("STN-003", loaded.nextId());
+        a.setName("A2");
+        repo.saveAll(List.of(a));
+        assertEquals(2, repo.findAll().size());
+        assertEquals("A2", reload().findAll().get(0).getName());
+    }
 }

@@ -195,6 +195,20 @@ public abstract class FileRepository<T extends Identifiable> implements Reposito
 
     @Override
     public void save(T item) {
+        put(item);
+        flush();
+    }
+
+    /** Saves many records with a single write of the file. Used when a lot of data is created at once. */
+    public void saveAll(List<T> newItems) {
+        for (T item : newItems) {
+            put(item);
+        }
+        flush();
+    }
+
+    /** Adds the record to the list in memory, or replaces the one with the same id. */
+    private void put(T item) {
         int position = -1;
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).getId().equals(item.getId())) {
@@ -206,7 +220,6 @@ public abstract class FileRepository<T extends Identifiable> implements Reposito
         } else {
             items.add(item);
         }
-        flush();
     }
 
     @Override

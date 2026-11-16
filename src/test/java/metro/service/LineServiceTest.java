@@ -102,4 +102,11 @@ class LineServiceTest {
         assertEquals(2, service.search("c").size());
         assertEquals(4, service.search(" ").size());
     }
+
+    @Test
+    void lineWithTripsCannotBeDeleted() {
+        data.tripService.create(data.train1, data.red, metro.model.Direction.FORWARD,
+                TestData.at(12, 0), TestData.at(12, 45));
+        assertRefused("Red has trips and cannot be deleted.", () -> service.delete(data.red.getId()));
+    }
 }

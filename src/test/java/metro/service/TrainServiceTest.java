@@ -11,8 +11,10 @@ import java.nio.file.Path;
 import metro.TestData;
 import metro.exception.AccessDeniedException;
 import metro.exception.ValidationException;
+import metro.model.Direction;
 import metro.model.Train;
 import metro.model.TrainStatus;
+import metro.model.Trip;
 import metro.repository.TrainRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,5 +118,36 @@ class TrainServiceTest {
         assertEquals(1, service.search("t-102").size());
         assertEquals(1, service.search("maintenance").size());
         assertTrue(service.search("trn-00").size() == 3);
+    }
+
+    // ----- rules that depend on trips (Task 13) -----
+
+    private Trip baseTrip() {
+        return data.tripService.create(data.train1, data.red, Direction.FORWARD,
+                TestData.at(12, 0), TestData.at(12, 45));
+    }
+
+    @Test
+    void trainWithUpcomingTripsCannotGoToMaintenance() {
+        baseTrip();
+        assertRefused("Train T-101 still has upcoming trips (1). Cancel or reassign them first.",
+                () -> service.update(data.train1.getId(), "T-101", 1200, TrainStatus.MAINTENANCE));
+        assertEquals(TrainStatus.ACTIVE, data.train1.getStatus());
+    }
+
+    @Test
+    void trainWithHistoryCannotBeDeleted() {
+        baseTrip();
+        assertRefused("Train T-101 has trip history and cannot be deleted. Mark it Retired instead.",
+                () -> service.delete(data.train1.getId()));
+    }
+
+    @Test
+    void trainWithOnlyFinishedTripsCanRetire() {
+        Trip trip = baseTrip();
+        data.tripService.complete(trip.getId());
+        data.clock.set(TestData.on(16, 10, 0));
+        service.update(data.train1.getId(), "T-101", 1200, TrainStatus.RETIRED);
+        assertEquals(TrainStatus.RETIRED, data.train1.getStatus());
     }
 }

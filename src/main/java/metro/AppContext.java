@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.LocalDateTime;
 import metro.exception.DataFileException;
 import metro.repository.AuditLog;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
 import metro.repository.TrainRepository;
+import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.DemoData;
@@ -16,6 +18,7 @@ import metro.service.LineService;
 import metro.service.Session;
 import metro.service.StationService;
 import metro.service.TrainService;
+import metro.service.TripService;
 import metro.service.UserService;
 
 /**
@@ -38,12 +41,14 @@ public class AppContext {
     private final StationRepository stations;
     private final LineRepository lines;
     private final TrainRepository trains;
+    private final TripRepository trips;
 
     private final AuthService authService;
     private final UserService userService;
     private final StationService stationService;
     private final LineService lineService;
     private final TrainService trainService;
+    private final TripService tripService;
 
     public AppContext(Path dataDir, Clock clock) {
         this.dataDir = dataDir;
@@ -65,18 +70,22 @@ public class AppContext {
         lines.load();
         trains = new TrainRepository(dataDir.resolve("trains.txt"));
         trains.load();
+        trips = new TripRepository(dataDir.resolve("trips.txt"), trains, lines);
+        trips.load();
 
         if (firstRun) {
             DemoData.seedUsers(users);
             DemoData.seedNetwork(stations, lines, trains);
+            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), LocalDateTime.now(clock));
         }
 
         // Services.
         authService = new AuthService(users, session, auditLog);
         userService = new UserService(users, session, auditLog);
         stationService = new StationService(stations, lines, session, auditLog);
-        lineService = new LineService(lines, session, auditLog);
-        trainService = new TrainService(trains, session, auditLog);
+        lineService = new LineService(lines, trips, session, auditLog);
+        trainService = new TrainService(trains, trips, session, auditLog);
+        tripService = new TripService(trips, session, auditLog, clock);
     }
 
     public Path getDataDir() {
@@ -113,5 +122,9 @@ public class AppContext {
 
     public TrainService getTrainService() {
         return trainService;
+    }
+
+    public TripService getTripService() {
+        return tripService;
     }
 }

@@ -8,6 +8,7 @@ import metro.model.Train;
 import metro.model.TrainStatus;
 import metro.repository.AuditLog;
 import metro.repository.TrainRepository;
+import metro.repository.TripRepository;
 import metro.util.Check;
 
 /**
@@ -16,11 +17,13 @@ import metro.util.Check;
 public class TrainService {
 
     private final TrainRepository trains;
+    private final TripRepository trips;
     private final Session session;
     private final AuditLog audit;
 
-    public TrainService(TrainRepository trains, Session session, AuditLog audit) {
+    public TrainService(TrainRepository trains, TripRepository trips, Session session, AuditLog audit) {
         this.trains = trains;
+        this.trips = trips;
         this.session = session;
         this.audit = audit;
     }
@@ -75,6 +78,12 @@ public class TrainService {
         String cleanCode = Check.notBlank(code, "Train ID").toUpperCase();
         checkCodeIsFree(cleanCode, train);
         new Train(id, cleanCode, capacity, status); // checks every value before the real train is touched
+        // Rule: a train cannot leave service while it still has trips to run.
+        int unfinished = trips.countUnfinished(train);
+        if (train.isActive() && status != TrainStatus.ACTIVE && unfinished > 0) {
+            throw new ValidationException("Train " + train.getCode() + " still has upcoming trips ("
+                    + unfinished + "). Cancel or reassign them first.");
+        }
         train.setCode(cleanCode);
         train.setCapacity(capacity);
         train.setStatus(status);
@@ -86,6 +95,11 @@ public class TrainService {
     public void delete(String id) {
         session.require(Permission.MANAGE_TRAINS);
         Train train = trains.require(id);
+        // Rule: a train that has ever run a trip is kept, so the trip history stays complete.
+        if (!trips.findByTrain(train).isEmpty()) {
+            throw new ValidationException("Train " + train.getCode()
+                    + " has trip history and cannot be deleted. Mark it Retired instead.");
+        }
         trains.delete(id);
         record("TRAIN_DELETED", train);
     }

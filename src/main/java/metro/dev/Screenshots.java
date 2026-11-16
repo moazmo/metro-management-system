@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -27,13 +28,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
 import metro.AppContext;
+import metro.util.Dates;
 import metro.model.Line;
+import metro.model.Trip;
 import metro.service.DemoData;
 import metro.ui.LineFormDialog;
 import metro.ui.LoginScreen;
 import metro.ui.MainWindow;
 import metro.ui.NavItem;
 import metro.ui.Theme;
+import metro.ui.TripFormDialog;
 import metro.ui.UserFormDialog;
 
 /**
@@ -60,6 +64,7 @@ public class Screenshots extends Application {
     private Path outputDir;
     private String suffix = "";
     private Dialog<?> openDialog;
+    private Trip conflictTarget;
 
     public static void main(String[] args) {
         launch(args);
@@ -138,6 +143,43 @@ public class Screenshots extends Application {
             });
             list.add(() -> saveDialog("dialog-edit-line"));
         }
+        if (username.equals("controller")) {
+            list.add(() -> showDialog(new TripFormDialog(context, null)));
+            list.add(() -> saveDialog("dialog-new-trip"));
+            list.add(() -> {
+                // editing a trip onto a time when its train is busy must be refused inside the form
+                Trip first = context.getTripService().listAll().get(0);
+                Trip sameTrainLater = null;
+                for (Trip other : context.getTripService().listAll()) {
+                    if (sameTrainLater == null && other != first && other.getTrain().equals(first.getTrain())
+                            && !other.getStatus().isFinal()) {
+                        sameTrainLater = other;
+                    }
+                }
+                TripFormDialog dialog = new TripFormDialog(context, sameTrainLater);
+                showDialog(dialog);
+                conflictTarget = sameTrainLater;
+            });
+            list.add(() -> {
+                // find another unfinished trip of the same train and move this one onto it
+                Trip clashWith = null;
+                for (Trip other : context.getTripService().listAll()) {
+                    if (other != conflictTarget && other.getTrain().equals(conflictTarget.getTrain())
+                            && !other.getStatus().isFinal()) {
+                        clashWith = other;
+                    }
+                }
+                DatePicker date = (DatePicker) dialogNode(".date-picker");
+                date.setValue(clashWith.getDeparture().toLocalDate());
+                List<TextField> fields = dialogTextFields();
+                fields.get(fields.size() - 2).setText(Dates.time(clashWith.getDeparture()));
+                pressDialogSave();
+            });
+            list.add(() -> {
+                check("a conflicting trip edit is refused inside the form", openDialog.isShowing());
+                saveDialog("dialog-trip-conflict");
+            });
+        }
         if (username.equals("agent")) {
             list.add(() -> window.open(window.findItem("My profile")));
             list.add(() -> {
@@ -155,6 +197,22 @@ public class Screenshots extends Application {
 
     private TextField text(String id) {
         return (TextField) scene.lookup(id);
+    }
+
+    private javafx.scene.Node dialogNode(String selector) {
+        return openDialog.getDialogPane().lookup(selector);
+    }
+
+    /** The plain text fields of the open dialog, top to bottom (the date picker's own field is left out). */
+    private List<TextField> dialogTextFields() {
+        List<TextField> fields = new ArrayList<>();
+        for (javafx.scene.Node node : openDialog.getDialogPane().lookupAll(".text-field")) {
+            if (node instanceof TextField && !(node.getParent() instanceof DatePicker)
+                    && !(node.getParent() instanceof javafx.scene.control.ComboBox)) {
+                fields.add((TextField) node);
+            }
+        }
+        return fields;
     }
 
     private TableView<?> table() {

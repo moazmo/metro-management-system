@@ -15,6 +15,7 @@ import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.DemoData;
 import metro.service.LineService;
+import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
 import metro.service.TrainService;
@@ -49,6 +50,7 @@ public class AppContext {
     private final LineService lineService;
     private final TrainService trainService;
     private final TripService tripService;
+    private final RoutePlanner routePlanner;
 
     public AppContext(Path dataDir, Clock clock) {
         this.dataDir = dataDir;
@@ -86,6 +88,7 @@ public class AppContext {
         lineService = new LineService(lines, trips, session, auditLog);
         trainService = new TrainService(trains, trips, session, auditLog);
         tripService = new TripService(trips, session, auditLog, clock);
+        routePlanner = new RoutePlanner(lines);
     }
 
     public Path getDataDir() {
@@ -126,5 +129,9 @@ public class AppContext {
 
     public TripService getTripService() {
         return tripService;
+    }
+
+    public RoutePlanner getRoutePlanner() {
+        return routePlanner;
     }
 }

@@ -232,4 +232,26 @@ class DemoDataTest {
         assertEquals(java.nio.file.Files.readAllLines(dir.resolve("trips.txt")),
                 java.nio.file.Files.readAllLines(other.resolve("trips.txt")));
     }
+
+    // ----- route planning on the demo network (Task 15) -----
+
+    @Test
+    void demoNetworkIsFullyConnected() {
+        RoutePlanner planner = context.getRoutePlanner();
+        Station helwan = station("Helwan");
+        for (Station other : context.getStationService().listAll()) {
+            if (!other.equals(helwan)) {
+                assertTrue(planner.plan(helwan, other).getStops() >= 1, other.getName());
+            }
+        }
+    }
+
+    @Test
+    void helwanToCairoUniversityChangesOnce() {
+        metro.model.Journey journey = context.getRoutePlanner().plan(station("Helwan"), station("Cairo University"));
+        assertEquals(1, journey.getTransfers());
+        assertEquals("Sadat", journey.getLegs().get(0).getTo().getName());
+        // Helwan to Sadat is 18 stops on Line 1, Sadat to Cairo University 4 stops on Line 2
+        assertEquals(22, journey.getStops());
+    }
 }

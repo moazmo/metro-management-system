@@ -27,7 +27,7 @@ public final class Theme {
         } else {
             Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
         }
-        String css = Theme.class.getResource(APP_CSS).toExternalForm();
+        String css = appStyleSheet();
         if (!scene.getStylesheets().contains(css)) {
             scene.getStylesheets().add(css);
         }
@@ -35,6 +35,11 @@ public final class Theme {
         if (dark) {
             scene.getRoot().getStyleClass().add("dark");
         }
+    }
+
+    /** The address of our own style sheet, for windows (dialogs) that are not the main scene. */
+    public static String appStyleSheet() {
+        return Theme.class.getResource(APP_CSS).toExternalForm();
     }
 
     public static boolean isDark() {

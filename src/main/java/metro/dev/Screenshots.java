@@ -1,0 +1,232 @@
+package metro.dev;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import javafx.animation.PauseTransition;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.TextField;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import javax.imageio.ImageIO;
+import metro.AppContext;
+import metro.service.DemoData;
+import metro.ui.LoginScreen;
+import metro.ui.MainWindow;
+import metro.ui.NavItem;
+import metro.ui.Theme;
+import metro.ui.UserFormDialog;
+
+/**
+ * A developer tool, not part of the application: it opens every screen for
+ * every demo account and saves a picture of each one in target/screenshots.
+ * It also performs a few scripted actions (typing into fields, pressing
+ * buttons) and prints a CHECK line saying whether each one worked.
+ *
+ * It is used to check the screens after a change and to produce the pictures
+ * in the README. It works on a fresh temporary data folder, so it never
+ * touches real data. Run it with:
+ *   ./mvnw -q javafx:run -Dmetro.mainClass=metro.dev.Screenshots
+ * Set the environment variable METRO_SHOTS_THEME=dark for dark pictures.
+ */
+public class Screenshots extends Application {
+
+    private static final String[] USERNAMES = {"admin", "controller", "agent", "supervisor"};
+
+    private final LinkedList<Runnable> steps = new LinkedList<>();
+    private Stage stage;
+    private Scene scene;
+    private AppContext context;
+    private Path dataDir;
+    private Path outputDir;
+    private String suffix = "";
+    private Dialog<?> openDialog;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        this.stage = stage;
+        boolean dark = "dark".equals(System.getenv("METRO_SHOTS_THEME"));
+        suffix = dark ? "-dark" : "";
+        outputDir = Path.of("target", "screenshots");
+        Files.createDirectories(outputDir);
+        dataDir = Files.createTempDirectory("metro-screenshots");
+        context = new AppContext(dataDir, Clock.systemDefaultZone());
+
+        scene = new Scene(new StackPane(), 1280, 800);
+        Theme.apply(scene, dark);
+        stage.setTitle("Screenshots");
+        stage.setScene(scene);
+        stage.show();
+
+        steps.add(() -> show(new LoginScreen(context, () -> { })));
+        steps.add(() -> save("login"));
+        steps.add(() -> {
+            // a wrong password must show the refusal inside the card
+            text("#login-username").setText("admin");
+            text("#login-password").setText("wrong-password");
+            button("#login-button").fire();
+        });
+        steps.add(() -> save("login-error"));
+        for (String username : USERNAMES) {
+            steps.add(() -> photographAccount(username));
+        }
+        runNextStep();
+    }
+
+    /** Logs in as one demo account and queues a picture of every screen it can open. */
+    private void photographAccount(String username) {
+        context.getAuthService().logout();
+        context.getAuthService().login(username, DemoData.DEMO_PASSWORD);
+        MainWindow window = new MainWindow(context, () -> { });
+        show(window);
+
+        List<Runnable> forThisAccount = new ArrayList<>();
+        for (NavItem item : window.getVisibleItems()) {
+            String name = username + "-" + item.getLabel().toLowerCase().replace(' ', '-');
+            forThisAccount.add(() -> window.open(item));
+            forThisAccount.add(() -> save(name));
+        }
+        addScriptedChecks(username, window, forThisAccount);
+        steps.addAll(0, forThisAccount);
+    }
+
+    /** Extra actions for some accounts: things a person would click through by hand. */
+    private void addScriptedChecks(String username, MainWindow window, List<Runnable> list) {
+        if (username.equals("admin")) {
+            list.add(() -> showDialog(new UserFormDialog(context.getUserService(), null)));
+            list.add(() -> pressDialogSave());
+            list.add(() -> {
+                check("a refused save keeps the dialog open", openDialog.isShowing());
+                check("a refused save stores nothing", !fileHasLine("users.txt", "USR-005"));
+                saveDialog("dialog-add-user");
+            });
+        }
+        if (username.equals("agent")) {
+            list.add(() -> window.open(window.findItem("My profile")));
+            list.add(() -> {
+                text("#profile-phone").setText("0123456789");
+                button("#profile-save").fire();
+            });
+            list.add(() -> {
+                check("profile change is written to users.txt", fileHasLine("users.txt", "|agent|", "|0123456789|"));
+                save("agent-my-profile-saved");
+            });
+        }
+    }
+
+    // ----- small helpers for the scripted actions -----
+
+    private TextField text(String id) {
+        return (TextField) scene.lookup(id);
+    }
+
+    private Button button(String id) {
+        return (Button) scene.lookup(id);
+    }
+
+    private void check(String what, boolean ok) {
+        System.out.println((ok ? "CHECK OK      " : "CHECK FAILED  ") + what);
+    }
+
+    /** True when some line of a data file contains all the given pieces of text. */
+    private boolean fileHasLine(String fileName, String... parts) {
+        try {
+            for (String line : Files.readAllLines(dataDir.resolve(fileName), StandardCharsets.UTF_8)) {
+                boolean all = true;
+                for (String part : parts) {
+                    all = all && line.contains(part);
+                }
+                if (all) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        return false;
+    }
+
+    private void show(Parent root) {
+        scene.setRoot(root);
+        Theme.apply(scene, Theme.isDark());
+    }
+
+    private void showDialog(Dialog<?> dialog) {
+        openDialog = dialog;
+        dialog.initOwner(stage);
+        dialog.show();
+    }
+
+    /** Presses the Save button of the dialog that is open. */
+    private void pressDialogSave() {
+        for (ButtonType type : openDialog.getDialogPane().getButtonTypes()) {
+            if (type.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                ((Button) openDialog.getDialogPane().lookupButton(type)).fire();
+            }
+        }
+    }
+
+    private void saveDialog(String name) {
+        write(openDialog.getDialogPane().getScene().snapshot(null), name);
+        openDialog.close();
+        openDialog = null;
+    }
+
+    /** Runs the steps one after another with a short pause, so each screen is fully drawn. */
+    private void runNextStep() {
+        if (steps.isEmpty()) {
+            Platform.exit();
+            return;
+        }
+        try {
+            steps.removeFirst().run();
+        } catch (RuntimeException e) {
+            System.out.println("CHECK FAILED  a scripted step threw " + e);
+        }
+        PauseTransition pause = new PauseTransition(Duration.millis(250));
+        pause.setOnFinished(event -> runNextStep());
+        pause.play();
+    }
+
+    private void save(String name) {
+        write(scene.snapshot(null), name);
+    }
+
+    /** Saves a picture as a PNG file. */
+    private void write(WritableImage image, String name) {
+        int width = (int) image.getWidth();
+        int height = (int) image.getHeight();
+        BufferedImage picture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        PixelReader reader = image.getPixelReader();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                picture.setRGB(x, y, reader.getArgb(x, y));
+            }
+        }
+        try {
+            ImageIO.write(picture, "png", outputDir.resolve(name + suffix + ".png").toFile());
+        } catch (IOException e) {
+            System.out.println("CHECK FAILED  could not save " + name + ": " + e.getMessage());
+        }
+    }
+}

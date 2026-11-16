@@ -61,6 +61,9 @@ public class MainWindow extends BorderPane {
         items.add(new NavItem("ADMINISTRATION", "Trains", "train", Permission.MANAGE_TRAINS,
                 () -> new TrainsScreen(context)));
 
+        items.add(new NavItem("SCHEDULE", "Trips", "schedule", Permission.VIEW_TRIPS,
+                () -> new TripsScreen(context)));
+
         items.add(new NavItem("ACCOUNT", "Staff users", "people", Permission.MANAGE_USERS,
                 () -> new StaffUsersScreen(context)));
         items.add(new NavItem("ACCOUNT", "My profile", "person", Permission.EDIT_OWN_PROFILE,

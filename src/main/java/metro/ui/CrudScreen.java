@@ -45,12 +45,14 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
         search.setId("crud-search");
         table.setId("crud-table");
         search.setPromptText("Search…");
-        search.setPrefWidth(260);
+        search.setPrefWidth(240);
+        search.setMinWidth(140);
         search.textProperty().addListener((observable, before, after) -> refresh());
         filters.setAlignment(Pos.CENTER_LEFT);
 
         addButton = new Button(addButtonLabel, Icons.of("add", 16));
         addButton.getStyleClass().add("accent");
+        addButton.setMinWidth(Region.USE_PREF_SIZE);
         addButton.setOnAction(event -> {
             clearMessage();
             openForm(null);

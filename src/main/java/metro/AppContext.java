@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.LocalDateTime;
 import metro.exception.DataFileException;
 import metro.repository.AuditLog;
 import metro.repository.LineRepository;
@@ -75,6 +76,7 @@ public class AppContext {
         if (firstRun) {
             DemoData.seedUsers(users);
             DemoData.seedNetwork(stations, lines, trains);
+            DemoData.seedTrips(trips, lines.findAll(), trains.findAll(), LocalDateTime.now(clock));
         }
 
         // Services.

@@ -16,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import metro.exception.MetroException;
 
@@ -50,6 +51,7 @@ public abstract class FormDialog extends Dialog<Boolean> {
         error.getStyleClass().add("form-error");
         error.setWrapText(true);
         error.setMaxWidth(430);
+        error.setMinHeight(Region.USE_PREF_SIZE); // let a long message use several lines instead of being cut
         error.setVisible(false);
         error.setManaged(false);
 

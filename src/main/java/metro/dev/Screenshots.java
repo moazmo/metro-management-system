@@ -232,6 +232,15 @@ public class Screenshots extends Application {
                 button("#report-generate").fire();
             });
             list.add(() -> {
+                ((DatePicker) scene.lookup("#report-from")).setValue(null);
+                try {
+                    String file = ((ReportScreen) scene.lookup(".screen")).defaultFileName();
+                    check("the export file name follows the report shown, even with a date cleared",
+                            file.equals("revenue-report-2020-01-01-to-2020-01-03.csv"));
+                } catch (RuntimeException e) {
+                    check("the export file name follows the report shown, even with a date cleared (threw "
+                            + e + ")", false);
+                }
                 check("a period with no sales says so", scene.lookup(".chart-area").lookup(".label") != null
                         && reportTable().getItems().size() == 4);
                 save("admin-revenue-report-empty");
@@ -252,6 +261,30 @@ public class Screenshots extends Application {
             list.add(() -> saveDialog("dialog-edit-line"));
         }
         if (username.equals("controller")) {
+            list.add(() -> {
+                try {
+                    // users but no network: the form must open and explain, never crash
+                    Path empty = Files.createTempDirectory("metro-empty");
+                    Files.copy(dataDir.resolve("users.txt"), empty.resolve("users.txt"));
+                    AppContext bare = new AppContext(empty, Clock.systemDefaultZone());
+                    bare.getAuthService().login("controller", DemoData.DEMO_PASSWORD);
+                    showDialog(new TripFormDialog(bare, null));
+                    pressDialogSave();
+                    javafx.scene.Node error = openDialog.getDialogPane().lookup(".form-error");
+                    check("a new trip with no lines or trains explains itself",
+                            openDialog.isShowing() && error != null && error.isVisible()
+                            && ((javafx.scene.control.Label) error).getText()
+                                    .equals("Add a line before scheduling trips"));
+                    openDialog.close();
+                    openDialog = null;
+                } catch (IOException | RuntimeException e) {
+                    check("a new trip with no lines or trains explains itself (threw " + e + ")", false);
+                    if (openDialog != null) {
+                        openDialog.close();
+                        openDialog = null;
+                    }
+                }
+            });
             list.add(() -> {
                 window.open(window.findItem("Network map"));
                 NetworkMapScreen map = (NetworkMapScreen) scene.lookup(".screen");

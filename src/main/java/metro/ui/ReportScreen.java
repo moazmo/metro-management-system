@@ -157,10 +157,17 @@ public abstract class ReportScreen extends Screen {
         showInfo("Saved " + file.getFileName());
     }
 
-    /** For example "revenue-report-2026-11-09-to-2026-11-15.csv". */
+    /**
+     * For example "revenue-report-2026-11-09-to-2026-11-15.csv". The dates are
+     * those of the report on screen, which may differ from the date boxes if
+     * they were changed without pressing Generate.
+     */
     public String defaultFileName() {
-        return getTitle().toLowerCase().replace(' ', '-') + "-" + from.getValue().format(Dates.ISO_DATE)
-                + "-to-" + to.getValue().format(Dates.ISO_DATE) + ".csv";
+        if (current == null) {
+            generateNow();
+        }
+        return getTitle().toLowerCase().replace(' ', '-') + "-" + current.getFrom().format(Dates.ISO_DATE)
+                + "-to-" + current.getTo().format(Dates.ISO_DATE) + ".csv";
     }
 
     // ----- helpers for the subclasses -----

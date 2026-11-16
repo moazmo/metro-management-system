@@ -42,6 +42,8 @@ public abstract class CrudScreen<T extends Identifiable> extends Screen {
     protected CrudScreen(AppContext context, String title, String addButtonLabel) {
         super(context, title);
 
+        search.setId("crud-search");
+        table.setId("crud-table");
         search.setPromptText("Search…");
         search.setPrefWidth(260);
         search.textProperty().addListener((observable, before, after) -> refresh());

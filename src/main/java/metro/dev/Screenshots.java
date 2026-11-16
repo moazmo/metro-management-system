@@ -18,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -26,7 +27,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javax.imageio.ImageIO;
 import metro.AppContext;
+import metro.model.Line;
 import metro.service.DemoData;
+import metro.ui.LineFormDialog;
 import metro.ui.LoginScreen;
 import metro.ui.MainWindow;
 import metro.ui.NavItem;
@@ -121,6 +124,20 @@ public class Screenshots extends Application {
                 saveDialog("dialog-add-user");
             });
         }
+        if (username.equals("admin")) {
+            list.add(() -> window.open(window.findItem("Stations")));
+            list.add(() -> text("#crud-search").setText("sadat"));
+            list.add(() -> {
+                check("searching stations for 'sadat' leaves one row", table().getItems().size() == 1);
+                save("admin-stations-search");
+            });
+            list.add(() -> {
+                Line second = context.getLineService().listAll().get(1);
+                showDialog(new LineFormDialog(context.getLineService(),
+                        context.getStationService().listAll(), second));
+            });
+            list.add(() -> saveDialog("dialog-edit-line"));
+        }
         if (username.equals("agent")) {
             list.add(() -> window.open(window.findItem("My profile")));
             list.add(() -> {
@@ -138,6 +155,10 @@ public class Screenshots extends Application {
 
     private TextField text(String id) {
         return (TextField) scene.lookup(id);
+    }
+
+    private TableView<?> table() {
+        return (TableView<?>) scene.lookup("#crud-table");
     }
 
     private Button button(String id) {

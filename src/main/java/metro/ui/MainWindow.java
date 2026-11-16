@@ -14,6 +14,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import metro.AppContext;
+import metro.model.Permission;
 import metro.model.User;
 
 /**
@@ -52,6 +53,11 @@ public class MainWindow extends BorderPane {
     /** Every sidebar entry, in display order. */
     private void buildNavigation() {
         items.add(new NavItem(null, "Dashboard", "dashboard", null, () -> new DashboardScreen(context)));
+
+        items.add(new NavItem("ACCOUNT", "Staff users", "people", Permission.MANAGE_USERS,
+                () -> new StaffUsersScreen(context)));
+        items.add(new NavItem("ACCOUNT", "My profile", "person", Permission.EDIT_OWN_PROFILE,
+                () -> new ProfileScreen(context)));
     }
 
     private HBox buildTopBar(Runnable onLogout) {

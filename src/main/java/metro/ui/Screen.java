@@ -100,7 +100,16 @@ public abstract class Screen extends BorderPane {
         if (getScene() != null) {
             alert.initOwner(getScene().getWindow());
         }
-        return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+        alert.showAndWait();
+        return alert.getResult() == ButtonType.OK;
+    }
+
+    /** Opens a form dialog on top of this window. True when the user saved. */
+    protected boolean showDialog(FormDialog dialog) {
+        if (getScene() != null) {
+            dialog.initOwner(getScene().getWindow());
+        }
+        return dialog.showAndSave();
     }
 
     /**

@@ -136,3 +136,32 @@
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
+
+/* ---------- status badges ---------- */
+.badge {
+    -fx-padding: 2 10 2 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.badge-neutral { -fx-background-color: -color-neutral-subtle; -fx-text-fill: -color-fg-muted; }
+.badge-good    { -fx-background-color: -color-success-subtle; -fx-text-fill: -color-success-fg; }
+.badge-warning { -fx-background-color: -color-warning-subtle; -fx-text-fill: -color-warning-fg; }
+.badge-bad     { -fx-background-color: -color-danger-subtle;  -fx-text-fill: -color-danger-fg; }
+
+/* ---------- forms ---------- */
+.form-card {
+    -fx-padding: 20;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: -color-border-default;
+}
+.form-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.read-only {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+}

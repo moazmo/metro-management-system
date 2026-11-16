@@ -10,6 +10,7 @@ import metro.repository.AuditLog;
 import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
@@ -20,6 +21,7 @@ import metro.service.LineService;
 import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
+import metro.service.TicketService;
 import metro.service.TrainService;
 import metro.service.TripService;
 import metro.service.UserService;
@@ -46,6 +48,7 @@ public class AppContext {
     private final TrainRepository trains;
     private final TripRepository trips;
     private final FareTierRepository fareTiers;
+    private final TicketRepository tickets;
 
     private final AuthService authService;
     private final UserService userService;
@@ -55,6 +58,7 @@ public class AppContext {
     private final TripService tripService;
     private final RoutePlanner routePlanner;
     private final FareService fareService;
+    private final TicketService ticketService;
 
     public AppContext(Path dataDir, Clock clock) {
         this.dataDir = dataDir;
@@ -80,6 +84,8 @@ public class AppContext {
         trips.load();
         fareTiers = new FareTierRepository(dataDir.resolve("fares.txt"));
         fareTiers.load();
+        tickets = new TicketRepository(dataDir.resolve("tickets.txt"), stations);
+        tickets.load();
 
         if (firstRun) {
             DemoData.seedUsers(users);
@@ -91,12 +97,13 @@ public class AppContext {
         // Services.
         authService = new AuthService(users, session, auditLog);
         userService = new UserService(users, session, auditLog);
-        stationService = new StationService(stations, lines, session, auditLog);
+        stationService = new StationService(stations, lines, tickets, session, auditLog);
         lineService = new LineService(lines, trips, session, auditLog);
         trainService = new TrainService(trains, trips, session, auditLog);
         tripService = new TripService(trips, session, auditLog, clock);
         routePlanner = new RoutePlanner(lines);
         fareService = new FareService(fareTiers, session, auditLog);
+        ticketService = new TicketService(tickets, routePlanner, fareService, session, auditLog, clock);
     }
 
     public Path getDataDir() {
@@ -145,5 +152,9 @@ public class AppContext {
 
     public FareService getFareService() {
         return fareService;
+    }
+
+    public TicketService getTicketService() {
+        return ticketService;
     }
 }

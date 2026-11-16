@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import metro.exception.DataFileException;
 import metro.model.Direction;
+import metro.model.FareTier;
 import metro.model.Line;
 import metro.model.Role;
 import metro.model.Station;
@@ -20,6 +21,7 @@ import metro.model.TrainStatus;
 import metro.model.Trip;
 import metro.model.TripStatus;
 import metro.model.UserFactory;
+import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
 import metro.repository.TrainRepository;
@@ -88,6 +90,19 @@ public final class DemoData {
             TrainStatus status = number == 112 ? TrainStatus.MAINTENANCE : TrainStatus.ACTIVE;
             trains.save(new Train(trains.nextId(), "T-" + number, 1800, status));
         }
+    }
+
+    /**
+     * The fare table: up to 9 stops, up to 16, up to 23 and up to 39.
+     * These are example prices; an admin can change them on the Fares screen.
+     */
+    public static void seedFares(FareTierRepository tiers) {
+        List<FareTier> table = new ArrayList<>();
+        table.add(new FareTier(tiers.nextId(), 9, 8.00));
+        table.add(new FareTier(tiers.nextId(), 16, 10.00));
+        table.add(new FareTier(tiers.nextId(), 23, 15.00));
+        table.add(new FareTier(tiers.nextId(), 39, 20.00));
+        tiers.saveAll(table);
     }
 
     /**

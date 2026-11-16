@@ -17,12 +17,15 @@ import metro.model.TrainStatus;
 import metro.model.User;
 import metro.model.UserFactory;
 import metro.repository.AuditLog;
+import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
+import metro.service.DemoData;
+import metro.service.FareService;
 import metro.service.LineService;
 import metro.service.PasswordHasher;
 import metro.service.Session;
@@ -61,6 +64,7 @@ public class TestData {
     public final LineRepository lines;
     public final TrainRepository trains;
     public final TripRepository trips;
+    public final FareTierRepository fareTiers;
 
     public final AuthService auth;
     public final UserService userService;
@@ -68,6 +72,7 @@ public class TestData {
     public final LineService lineService;
     public final TrainService trainService;
     public final TripService tripService;
+    public final FareService fareService;
 
     public final User admin, controller, agent, supervisor;
     public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
@@ -89,6 +94,9 @@ public class TestData {
         trains.load();
         trips = new TripRepository(dir.resolve("trips.txt"), trains, lines);
         trips.load();
+        fareTiers = new FareTierRepository(dir.resolve("fares.txt"));
+        fareTiers.load();
+        DemoData.seedFares(fareTiers); // up to 9 stops 8.00, 16 -> 10.00, 23 -> 15.00, 39 -> 20.00
 
         admin = addUser(Role.ADMIN, "admin", "System Admin");
         controller = addUser(Role.OPERATIONS_CONTROLLER, "controller", "Operations Desk");
@@ -121,6 +129,7 @@ public class TestData {
         lineService = new LineService(lines, trips, session, audit);
         trainService = new TrainService(trains, trips, session, audit);
         tripService = new TripService(trips, session, audit, clock);
+        fareService = new FareService(fareTiers, session, audit);
     }
 
     private User addUser(Role role, String username, String fullName) {

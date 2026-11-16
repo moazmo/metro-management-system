@@ -344,4 +344,40 @@ class DemoDataTest {
         assertEquals(java.nio.file.Files.readAllLines(dir.resolve("tickets.txt")),
                 java.nio.file.Files.readAllLines(other.resolve("tickets.txt")));
     }
+
+    // ----- reset (Task 25) -----
+
+    @Test
+    void resetRestoresDemoData() throws java.io.IOException {
+        context.getStationService().create("Temp", "");
+        for (metro.model.User user : context.getUserService().listAll()) {
+            if (user.getUsername().equals("agent")) {
+                context.getUserService().setActive(user.getId(), false);
+            }
+        }
+        DemoData.reset(dir);
+        AppContext fresh = new AppContext(dir, clock);
+        fresh.getAuthService().login("admin", DemoData.DEMO_PASSWORD);
+        assertTrue(fresh.getStationService().search("Temp").isEmpty());
+        assertEquals(4, fresh.getUserService().listAll().size());
+        for (metro.model.User user : fresh.getUserService().listAll()) {
+            assertTrue(user.isActive(), user.getUsername());
+        }
+        assertEquals(84, fresh.getStationService().listAll().size());
+    }
+
+    @Test
+    void resetLeavesOtherFilesAlone() throws java.io.IOException {
+        java.nio.file.Files.writeString(dir.resolve("notes.txt"), "keep me");
+        DemoData.reset(dir);
+        assertTrue(java.nio.file.Files.exists(dir.resolve("notes.txt")));
+        assertFalse(java.nio.file.Files.exists(dir.resolve("users.txt")));
+        assertFalse(java.nio.file.Files.exists(dir.resolve("tickets.txt")));
+    }
+
+    @Test
+    void resetNamesEveryDataFile() {
+        assertEquals(List.of("users.txt", "stations.txt", "lines.txt", "trains.txt", "trips.txt",
+                "fares.txt", "tickets.txt", "audit.log", "settings.txt"), DemoData.DATA_FILES);
+    }
 }

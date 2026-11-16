@@ -40,6 +40,7 @@ import metro.ui.LineFormDialog;
 import metro.ui.LoginScreen;
 import metro.ui.MainWindow;
 import metro.ui.NavItem;
+import metro.ui.NetworkMapScreen;
 import metro.ui.ReportScreen;
 import metro.ui.Theme;
 import metro.ui.TripFormDialog;
@@ -182,6 +183,19 @@ public class Screenshots extends Application {
             });
         }
         if (username.equals("admin")) {
+            list.add(() -> window.open(window.findItem("Audit log")));
+            list.add(() -> {
+                List<metro.model.AuditEntry> rows = auditTable().getItems();
+                check("the audit log shows the newest entry first",
+                        !rows.get(0).getTime().isBefore(rows.get(rows.size() - 1).getTime()));
+                // the wrong password typed on the login screen earlier left exactly one entry
+                text("#audit-search").setText("login_failed");
+                rows = auditTable().getItems();
+                check("searching the audit log finds the failed login",
+                        rows.size() == 1 && rows.get(0).getUsername().equals("admin"));
+                save("admin-audit-log-search");
+                text("#audit-search").setText("");
+            });
             list.add(() -> window.open(window.findItem("Trip report")));
             list.add(() -> {
                 ((ComboBox<String>) scene.lookup("#report-status")).setValue("Delayed");
@@ -238,6 +252,16 @@ public class Screenshots extends Application {
             list.add(() -> saveDialog("dialog-edit-line"));
         }
         if (username.equals("controller")) {
+            list.add(() -> {
+                window.open(window.findItem("Network map"));
+                NetworkMapScreen map = (NetworkMapScreen) scene.lookup(".screen");
+                map.choose(station("Helwan"));
+                map.choose(station("Cairo University"));
+                check("the map plans Helwan to Cairo University with a change at Sadat",
+                        map.getJourney() != null && map.getJourney().getTransfers() == 1
+                        && map.getJourney().getLegs().get(1).getFrom().getName().equals("Sadat"));
+            });
+            list.add(() -> save("controller-network-map-route"));
             list.add(() -> showDialog(new TripFormDialog(context, null)));
             list.add(() -> saveDialog("dialog-new-trip"));
             list.add(() -> {
@@ -366,6 +390,11 @@ public class Screenshots extends Application {
             }
         }
         return fields;
+    }
+
+    @SuppressWarnings("unchecked")
+    private TableView<metro.model.AuditEntry> auditTable() {
+        return (TableView<metro.model.AuditEntry>) scene.lookup("#audit-table");
     }
 
     @SuppressWarnings("unchecked")

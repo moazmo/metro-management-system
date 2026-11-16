@@ -44,12 +44,32 @@ public final class DemoData {
     /** The password of every demo account. */
     public static final String DEMO_PASSWORD = "metro123";
 
+    /** Every file the application keeps in its data folder. */
+    public static final List<String> DATA_FILES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(
+            "users.txt", "stations.txt", "lines.txt", "trains.txt", "trips.txt",
+            "fares.txt", "tickets.txt", "audit.log", "settings.txt"));
+
     private static final String NETWORK_FILE = "/metro/seed/network.txt";
     private static final String[] BUSY_STATIONS = {
         "Sadat", "Al-Shohadaa", "Attaba", "Nasser", "Cairo University", "Helwan", "Giza", "Maadi"
     };
 
     private DemoData() {
+    }
+
+    /**
+     * Deletes the application's data files so that the next start creates the
+     * demo data again. Only the files in DATA_FILES are touched; anything
+     * else in the folder is left alone.
+     */
+    public static void reset(java.nio.file.Path dataDir) {
+        for (String name : DATA_FILES) {
+            try {
+                java.nio.file.Files.deleteIfExists(dataDir.resolve(name));
+            } catch (IOException e) {
+                throw new DataFileException("Could not delete " + name, e);
+            }
+        }
     }
 
     /** One account per role. Each gets its own salt, so the stored hashes differ. */

@@ -47,7 +47,7 @@ account to use, what to do and what must happen.
 | Spec | Log in as | Do | Expect |
 |---|---|---|---|
 | 2a | controller | **Trips** → **New trip** → Line 1, direction *Helwan → New El-Marg*, train `T-101`, tomorrow, departure `07:15` | Arrival is filled in by itself (34 stops × 3 minutes) |
-| 2d | controller | Save it | Refused inside the form: *Train T-101 is already on trip TRP-… (06:00–07:52, Line 1). Pick another train or time.* |
+| 2d | controller | Save it | Refused inside the form: *Train T-101 is already on trip TRP-… (06:00–07:42, Line 1). Pick another train or time.* |
 | 2a | controller | Change the departure to `23:10` → Save | Trip created; `data/trips.txt` has a new line ending `SCHEDULED|0` |
 | 2b | controller | Select the new trip → **Edit** → departure `23:20` → Save | Saved; times updated in the table and the file |
 | 2c | controller | **Delay** → 20 minutes | Badge *Delayed*, arrival shows `+20 min`; the file line ends `DELAYED|20` |
@@ -160,4 +160,4 @@ the file and the line number instead of crashing.
 
 All sections above in order, the Authorization table with each account,
 the three file-handling moments, then the OOP tour. Finish on the
-Network map with a route highlighted across three lines.
+Network map with Helwan → Cairo University highlighted: Line 1, the change at Sadat, Line 2.

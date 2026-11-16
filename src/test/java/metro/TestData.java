@@ -25,6 +25,7 @@ import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
+import metro.service.DashboardService;
 import metro.service.DemoData;
 import metro.service.FareService;
 import metro.service.LineService;
@@ -81,6 +82,7 @@ public class TestData {
     public final RoutePlanner planner;
     public final TicketService ticketService;
     public final ReportService reportService;
+    public final DashboardService dashboardService;
 
     public final User admin, controller, agent, supervisor;
     public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
@@ -143,6 +145,7 @@ public class TestData {
         planner = new RoutePlanner(lines);
         ticketService = new TicketService(tickets, planner, fareService, session, audit, clock);
         reportService = new ReportService(trips, tickets, session, audit);
+        dashboardService = new DashboardService(trips, tickets, session, clock);
     }
 
     private User addUser(Role role, String username, String fullName) {

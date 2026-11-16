@@ -112,9 +112,17 @@ public abstract class FormDialog extends Dialog<Boolean> {
         Spinner<Integer> spinner = new Spinner<>(min, max, initialValue);
         spinner.setEditable(true);
         spinner.setMaxWidth(Double.MAX_VALUE);
+        spinner.getEditor().textProperty().addListener((observable, before, after) -> {
+            if (!after.matches("[0-9]*")) {
+                spinner.getEditor().setText(before);
+            }
+        });
         // Typed text is taken over when the field loses focus, not only on Enter.
         spinner.focusedProperty().addListener((observable, was, is) -> {
             if (!is) {
+                if (spinner.getEditor().getText().isEmpty()) {
+                    spinner.getEditor().setText(String.valueOf(spinner.getValue()));
+                }
                 spinner.increment(0);
             }
         });

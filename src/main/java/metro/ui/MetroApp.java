@@ -41,6 +41,8 @@ public class MetroApp extends Application {
             return;
         }
 
+        // the last chosen look, light or dark, is kept in settings.txt
+        Theme.apply(scene, "dark".equals(context.getSettings().get("theme", "light")));
         stage.setTitle(TITLE);
         stage.setMinWidth(1100);
         stage.setMinHeight(700);
@@ -54,7 +56,13 @@ public class MetroApp extends Application {
     }
 
     private void showMainWindow() {
-        setRoot(new MainWindow(context, this::logOut));
+        setRoot(new MainWindow(context, this::logOut, this::startOver));
+    }
+
+    /** After a reset: build everything again from the (now fresh) data folder and show the login screen. */
+    private void startOver() {
+        context = new AppContext(context.getDataDir(), context.getClock());
+        showLogin();
     }
 
     private void logOut() {

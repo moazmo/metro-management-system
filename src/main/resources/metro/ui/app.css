@@ -1,5 +1,138 @@
-/* Our own styles, added on top of the theme. */
+/* Our own styles, added on top of the theme. Colours come from the theme's
+   variables (-color-...), so everything follows light and dark mode. */
 
 .root {
     -metro-accent: #0B6E99;
+}
+
+/* ---------- icons ---------- */
+.icon {
+    -fx-icon-color: -color-fg-default;
+}
+.icon-14 { -fx-icon-size: 14px; }
+.icon-16 { -fx-icon-size: 16px; }
+.icon-18 { -fx-icon-size: 18px; }
+.icon-20 { -fx-icon-size: 20px; }
+.icon-22 { -fx-icon-size: 22px; }
+.icon-24 { -fx-icon-size: 24px; }
+.icon-28 { -fx-icon-size: 28px; }
+.icon-32 { -fx-icon-size: 32px; }
+.icon-44 { -fx-icon-size: 44px; }
+.icon-64 { -fx-icon-size: 64px; }
+.icon-dot {
+    -fx-fill: -color-fg-muted;
+}
+
+/* ---------- top bar ---------- */
+.top-bar {
+    -fx-padding: 10 20 10 20;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 1 0;
+}
+.brand {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-graphic-text-gap: 10;
+}
+.brand .icon {
+    -fx-icon-color: -metro-accent;
+}
+
+/* ---------- sidebar ---------- */
+.sidebar-scroll {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 0;
+    -fx-min-width: 230;
+    -fx-pref-width: 230;
+}
+.sidebar-scroll > .viewport {
+    -fx-background-color: -color-bg-subtle;
+}
+.sidebar {
+    -fx-padding: 14 10 14 10;
+    -fx-spacing: 2;
+    -fx-background-color: -color-bg-subtle;
+}
+.sidebar-section {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 16 10 6 10;
+}
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-alignment: center-left;
+    -fx-padding: 8 10 8 10;
+    -fx-graphic-text-gap: 12;
+    -fx-background-radius: 6;
+    -fx-text-fill: -color-fg-default;
+    -fx-cursor: hand;
+}
+.nav-item:hover {
+    -fx-background-color: -color-bg-inset;
+}
+.nav-item:selected {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+.nav-item:selected .icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+/* ---------- screens ---------- */
+.main-window {
+    -fx-background-color: -color-bg-default;
+}
+.screen-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+.banner {
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+.banner-error {
+    -fx-background-color: -color-danger-subtle;
+    -fx-border-color: -color-danger-muted;
+    -fx-text-fill: -color-danger-fg;
+}
+.banner-warning {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-muted;
+    -fx-text-fill: -color-warning-fg;
+}
+.banner-info {
+    -fx-background-color: -color-success-subtle;
+    -fx-border-color: -color-success-muted;
+    -fx-text-fill: -color-success-fg;
+}
+.form-error {
+    -fx-text-fill: -color-danger-fg;
+}
+
+/* ---------- login ---------- */
+.login-screen {
+    -fx-background-color: -color-bg-subtle;
+}
+.login-card {
+    -fx-padding: 36 32 28 32;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -color-border-default;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 24, 0, 0, 6);
+}
+.login-logo .icon {
+    -fx-icon-color: -metro-accent;
+}
+.login-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
 }

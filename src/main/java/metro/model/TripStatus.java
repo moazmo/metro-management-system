@@ -31,13 +31,8 @@ public enum TripStatus {
 
     /** Rule: whether a trip with this status may move to the next one. */
     public boolean canChangeTo(TripStatus next) {
-        if (isFinal()) {
-            return false;
-        }
-        if (this == SCHEDULED) {
-            return next != SCHEDULED;
-        }
-        return next != SCHEDULED; // DELAYED may stay delayed, complete or be cancelled
+        // A trip that is not finished may become Delayed, Completed or Cancelled, never Scheduled again.
+        return !isFinal() && next != SCHEDULED;
     }
 
     @Override

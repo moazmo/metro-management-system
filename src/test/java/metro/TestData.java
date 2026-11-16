@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 import metro.model.Line;
 import metro.model.Role;
 import metro.model.Station;
@@ -23,16 +23,26 @@ import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
-import metro.service.PasswordHasher;
 import metro.service.LineService;
+import metro.service.PasswordHasher;
 import metro.service.Session;
 import metro.service.StationService;
 import metro.service.TrainService;
+import metro.service.TripService;
 import metro.service.UserService;
 
 /**
  * Shared set-up for the tests: repositories and services on a temporary
- * folder, a clock fixed at 2026-11-15 10:00, and one user per role.
+ * folder, a clock fixed at 2026-11-15 10:00, one user per role, and a small
+ * fixture network:
+ *
+ *   Red    A B C D E
+ *   Blue   F C G H        (meets Red at C)
+ *   Green  H E I          (meets Blue at H and Red at E)
+ *   Island X Y            (not connected to the others)
+ *
+ * Stations get the ids STN-001 (A) to STN-011 (Y); users USR-001 (admin) to
+ * USR-004 (supervisor); trains TRN-001 to TRN-003.
  */
 public class TestData {
 
@@ -45,46 +55,46 @@ public class TestData {
     public final MutableClock clock = new MutableClock(LocalDateTime.of(2026, 11, 15, 10, 0));
     public final Session session = new Session();
     public final AuditLog audit;
+
     public final UserRepository users;
-    public final AuthService auth;
-    public final UserService userService;
-
-    public final User admin;
-    public final User controller;
-    public final User agent;
-    public final User supervisor;
-
-    // The fixture network:  Red A B C D E  ·  Blue F C G H  ·  Green H E I  ·  Island X Y (not connected)
     public final StationRepository stations;
     public final LineRepository lines;
+    public final TrainRepository trains;
+    public final TripRepository trips;
+
+    public final AuthService auth;
+    public final UserService userService;
     public final StationService stationService;
     public final LineService lineService;
+    public final TrainService trainService;
+    public final TripService tripService;
+
+    public final User admin, controller, agent, supervisor;
     public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
     public final Station stationX, stationY;
     public final Line red, blue, green, island;
-
-    public final TrainRepository trains;
-    public final TrainService trainService;
     public final Train train1, train2, train3;
-
-    public final TripRepository trips;
 
     public TestData(Path dir) {
         this.dir = dir;
         audit = new AuditLog(dir.resolve("audit.log"), clock);
+
         users = new UserRepository(dir.resolve("users.txt"));
         users.load();
-        admin = addUser(Role.ADMIN, "admin", "System Admin");
-        controller = addUser(Role.OPERATIONS_CONTROLLER, "controller", "Operations Desk");
-        agent = addUser(Role.TICKET_AGENT, "agent", "Ticket Window 1");
-        supervisor = addUser(Role.STATION_SUPERVISOR, "supervisor", "Station Supervisor");
-        auth = new AuthService(users, session, audit);
-        userService = new UserService(users, session, audit);
-
         stations = new StationRepository(dir.resolve("stations.txt"));
         stations.load();
         lines = new LineRepository(dir.resolve("lines.txt"), stations);
         lines.load();
+        trains = new TrainRepository(dir.resolve("trains.txt"));
+        trains.load();
+        trips = new TripRepository(dir.resolve("trips.txt"), trains, lines);
+        trips.load();
+
+        admin = addUser(Role.ADMIN, "admin", "System Admin");
+        controller = addUser(Role.OPERATIONS_CONTROLLER, "controller", "Operations Desk");
+        agent = addUser(Role.TICKET_AGENT, "agent", "Ticket Window 1");
+        supervisor = addUser(Role.STATION_SUPERVISOR, "supervisor", "Station Supervisor");
+
         stationA = addStation("A");
         stationB = addStation("B");
         stationC = addStation("C");
@@ -100,29 +110,23 @@ public class TestData {
         blue = addLine("Blue", "#1976D2", stationF, stationC, stationG, stationH);
         green = addLine("Green", "#388E3C", stationH, stationE, stationI);
         island = addLine("Island", "#757575", stationX, stationY);
-        stationService = new StationService(stations, lines, session, audit);
-        lineService = new LineService(lines, session, audit);
 
-        trains = new TrainRepository(dir.resolve("trains.txt"));
-        trains.load();
         train1 = addTrain("T-101", 1200, TrainStatus.ACTIVE);
         train2 = addTrain("T-102", 1200, TrainStatus.ACTIVE);
         train3 = addTrain("T-103", 1000, TrainStatus.MAINTENANCE);
-        trainService = new TrainService(trains, session, audit);
 
-        trips = new TripRepository(dir.resolve("trips.txt"), trains, lines);
-        trips.load();
+        auth = new AuthService(users, session, audit);
+        userService = new UserService(users, session, audit);
+        stationService = new StationService(stations, lines, session, audit);
+        lineService = new LineService(lines, trips, session, audit);
+        trainService = new TrainService(trains, trips, session, audit);
+        tripService = new TripService(trips, session, audit, clock);
     }
 
-    /** A time on the fixture's "today", 2026-11-15. */
-    public static LocalDateTime at(int hour, int minute) {
-        return LocalDateTime.of(2026, 11, 15, hour, minute);
-    }
-
-    private Train addTrain(String code, int capacity, TrainStatus status) {
-        Train train = new Train(trains.nextId(), code, capacity, status);
-        trains.save(train);
-        return train;
+    private User addUser(Role role, String username, String fullName) {
+        User user = UserFactory.create(role, users.nextId(), username, HASH, SALT, fullName, "", "", true);
+        users.save(user);
+        return user;
     }
 
     private Station addStation(String name) {
@@ -137,6 +141,26 @@ public class TestData {
         return line;
     }
 
+    private Train addTrain(String code, int capacity, TrainStatus status) {
+        Train train = new Train(trains.nextId(), code, capacity, status);
+        trains.save(train);
+        return train;
+    }
+
+    public void loginAs(User user) {
+        session.login(user);
+    }
+
+    /** A time on the fixture's "today", 2026-11-15. */
+    public static LocalDateTime at(int hour, int minute) {
+        return LocalDateTime.of(2026, 11, 15, hour, minute);
+    }
+
+    /** A time on a given day of November 2026. */
+    public static LocalDateTime on(int day, int hour, int minute) {
+        return LocalDateTime.of(2026, 11, day, hour, minute);
+    }
+
     /** Lines read again from the files by brand-new repositories, as after a restart. */
     public LineRepository reloadedLines() {
         StationRepository freshStations = new StationRepository(dir.resolve("stations.txt"));
@@ -144,16 +168,6 @@ public class TestData {
         LineRepository freshLines = new LineRepository(dir.resolve("lines.txt"), freshStations);
         freshLines.load();
         return freshLines;
-    }
-
-    private User addUser(Role role, String username, String fullName) {
-        User user = UserFactory.create(role, users.nextId(), username, HASH, SALT, fullName, "", "", true);
-        users.save(user);
-        return user;
-    }
-
-    public void loginAs(User user) {
-        session.login(user);
     }
 
     /** The lines of one data file in the temporary folder. */

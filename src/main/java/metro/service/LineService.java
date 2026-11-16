@@ -8,6 +8,7 @@ import metro.model.Permission;
 import metro.model.Station;
 import metro.repository.AuditLog;
 import metro.repository.LineRepository;
+import metro.repository.TripRepository;
 import metro.util.Check;
 
 /**
@@ -16,11 +17,13 @@ import metro.util.Check;
 public class LineService {
 
     private final LineRepository lines;
+    private final TripRepository trips;
     private final Session session;
     private final AuditLog audit;
 
-    public LineService(LineRepository lines, Session session, AuditLog audit) {
+    public LineService(LineRepository lines, TripRepository trips, Session session, AuditLog audit) {
         this.lines = lines;
+        this.trips = trips;
         this.session = session;
         this.audit = audit;
     }
@@ -75,6 +78,10 @@ public class LineService {
     public void delete(String id) {
         session.require(Permission.MANAGE_LINES);
         Line line = lines.require(id);
+        // Rule: a line that trips refer to cannot be deleted.
+        if (!trips.findByLine(line).isEmpty()) {
+            throw new ValidationException(line.getName() + " has trips and cannot be deleted.");
+        }
         lines.delete(id);
         record("LINE_DELETED", line);
     }

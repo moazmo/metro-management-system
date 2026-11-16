@@ -68,4 +68,15 @@ public class TripRepository extends FileRepository<Trip> {
         }
         return found;
     }
+
+    /** How many trips of a train are neither completed nor cancelled. */
+    public int countUnfinished(Train train) {
+        int count = 0;
+        for (Trip trip : findByTrain(train)) {
+            if (!trip.getStatus().isFinal()) {
+                count++;
+            }
+        }
+        return count;
+    }
 }

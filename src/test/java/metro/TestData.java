@@ -20,6 +20,7 @@ import metro.repository.AuditLog;
 import metro.repository.FareTierRepository;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TicketRepository;
 import metro.repository.TrainRepository;
 import metro.repository.TripRepository;
 import metro.repository.UserRepository;
@@ -65,6 +66,7 @@ public class TestData {
     public final TrainRepository trains;
     public final TripRepository trips;
     public final FareTierRepository fareTiers;
+    public final TicketRepository tickets;
 
     public final AuthService auth;
     public final UserService userService;
@@ -97,6 +99,8 @@ public class TestData {
         fareTiers = new FareTierRepository(dir.resolve("fares.txt"));
         fareTiers.load();
         DemoData.seedFares(fareTiers); // up to 9 stops 8.00, 16 -> 10.00, 23 -> 15.00, 39 -> 20.00
+        tickets = new TicketRepository(dir.resolve("tickets.txt"), stations);
+        tickets.load();
 
         admin = addUser(Role.ADMIN, "admin", "System Admin");
         controller = addUser(Role.OPERATIONS_CONTROLLER, "controller", "Operations Desk");

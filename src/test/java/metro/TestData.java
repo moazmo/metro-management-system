@@ -29,6 +29,7 @@ import metro.service.DemoData;
 import metro.service.FareService;
 import metro.service.LineService;
 import metro.service.PasswordHasher;
+import metro.service.ReportService;
 import metro.service.RoutePlanner;
 import metro.service.Session;
 import metro.service.StationService;
@@ -79,6 +80,7 @@ public class TestData {
     public final FareService fareService;
     public final RoutePlanner planner;
     public final TicketService ticketService;
+    public final ReportService reportService;
 
     public final User admin, controller, agent, supervisor;
     public final Station stationA, stationB, stationC, stationD, stationE, stationF, stationG, stationH, stationI;
@@ -140,6 +142,7 @@ public class TestData {
         fareService = new FareService(fareTiers, session, audit);
         planner = new RoutePlanner(lines);
         ticketService = new TicketService(tickets, planner, fareService, session, audit, clock);
+        reportService = new ReportService(trips, tickets, session, audit);
     }
 
     private User addUser(Role role, String username, String fullName) {

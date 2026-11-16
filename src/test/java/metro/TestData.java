@@ -12,17 +12,21 @@ import metro.model.Line;
 import metro.model.Role;
 import metro.model.Station;
 import metro.model.StationStatus;
+import metro.model.Train;
+import metro.model.TrainStatus;
 import metro.model.User;
 import metro.model.UserFactory;
 import metro.repository.AuditLog;
 import metro.repository.LineRepository;
 import metro.repository.StationRepository;
+import metro.repository.TrainRepository;
 import metro.repository.UserRepository;
 import metro.service.AuthService;
 import metro.service.PasswordHasher;
 import metro.service.LineService;
 import metro.service.Session;
 import metro.service.StationService;
+import metro.service.TrainService;
 import metro.service.UserService;
 
 /**
@@ -58,6 +62,10 @@ public class TestData {
     public final Station stationX, stationY;
     public final Line red, blue, green, island;
 
+    public final TrainRepository trains;
+    public final TrainService trainService;
+    public final Train train1, train2, train3;
+
     public TestData(Path dir) {
         this.dir = dir;
         audit = new AuditLog(dir.resolve("audit.log"), clock);
@@ -91,6 +99,19 @@ public class TestData {
         island = addLine("Island", "#757575", stationX, stationY);
         stationService = new StationService(stations, lines, session, audit);
         lineService = new LineService(lines, session, audit);
+
+        trains = new TrainRepository(dir.resolve("trains.txt"));
+        trains.load();
+        train1 = addTrain("T-101", 1200, TrainStatus.ACTIVE);
+        train2 = addTrain("T-102", 1200, TrainStatus.ACTIVE);
+        train3 = addTrain("T-103", 1000, TrainStatus.MAINTENANCE);
+        trainService = new TrainService(trains, session, audit);
+    }
+
+    private Train addTrain(String code, int capacity, TrainStatus status) {
+        Train train = new Train(trains.nextId(), code, capacity, status);
+        trains.save(train);
+        return train;
     }
 
     private Station addStation(String name) {

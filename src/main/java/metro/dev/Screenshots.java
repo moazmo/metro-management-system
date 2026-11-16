@@ -40,6 +40,7 @@ import metro.ui.LineFormDialog;
 import metro.ui.LoginScreen;
 import metro.ui.MainWindow;
 import metro.ui.NavItem;
+import metro.ui.NetworkMapScreen;
 import metro.ui.ReportScreen;
 import metro.ui.Theme;
 import metro.ui.TripFormDialog;
@@ -238,6 +239,16 @@ public class Screenshots extends Application {
             list.add(() -> saveDialog("dialog-edit-line"));
         }
         if (username.equals("controller")) {
+            list.add(() -> {
+                window.open(window.findItem("Network map"));
+                NetworkMapScreen map = (NetworkMapScreen) scene.lookup(".screen");
+                map.choose(station("Helwan"));
+                map.choose(station("Cairo University"));
+                check("the map plans Helwan to Cairo University with a change at Sadat",
+                        map.getJourney() != null && map.getJourney().getTransfers() == 1
+                        && map.getJourney().getLegs().get(1).getFrom().getName().equals("Sadat"));
+            });
+            list.add(() -> save("controller-network-map-route"));
             list.add(() -> showDialog(new TripFormDialog(context, null)));
             list.add(() -> saveDialog("dialog-new-trip"));
             list.add(() -> {

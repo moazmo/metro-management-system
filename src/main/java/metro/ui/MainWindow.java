@@ -53,6 +53,8 @@ public class MainWindow extends BorderPane {
     /** Every sidebar entry, in display order. */
     private void buildNavigation() {
         items.add(new NavItem(null, "Dashboard", "dashboard", null, () -> new DashboardScreen(context)));
+        items.add(new NavItem(null, "Network map", "map", Permission.VIEW_NETWORK,
+                () -> new NetworkMapScreen(context)));
 
         items.add(new NavItem("ADMINISTRATION", "Stations", "place", Permission.MANAGE_STATIONS,
                 () -> new StationsScreen(context)));

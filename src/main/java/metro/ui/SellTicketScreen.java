@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
@@ -81,8 +83,12 @@ public class SellTicketScreen extends Screen {
         sell.setMaxWidth(Double.MAX_VALUE);
         sell.setOnAction(event -> run(this::sellTickets));
 
+        Button pickOnMap = new Button("Pick on map", Icons.of("map", 16));
+        pickOnMap.setMaxWidth(Double.MAX_VALUE);
+        pickOnMap.setOnAction(event -> pickOnMap());
+
         VBox form = card("Journey",
-                new Label("From"), from, new Label("To"), to,
+                new Label("From"), from, new Label("To"), to, pickOnMap,
                 new Label("Ticket type"), types, new Label("Quantity"), quantity, sell);
         form.setMinWidth(280);
         form.setMaxWidth(300);
@@ -118,6 +124,35 @@ public class SellTicketScreen extends Screen {
         from.setValue(origin);
         to.setValue(destination);
         updateSummary();
+    }
+
+    /** Opens the network map in a window; the first station clicked is the origin, the second the destination. */
+    private void pickOnMap() {
+        NetworkMapView view = new NetworkMapView(context.getLineService().listAll());
+        ScrollPane scroll = new ScrollPane(view);
+        scroll.setPannable(true);
+        scroll.setPrefSize(1000, 560);
+        Label hint = new Label("Click the station the passenger travels from, then the one they travel to.");
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Pick the journey on the map");
+        dialog.getDialogPane().setContent(new VBox(10, hint, scroll));
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+        dialog.getDialogPane().getStylesheets().add(Theme.appStyleSheet());
+        if (getScene() != null) {
+            dialog.initOwner(getScene().getWindow());
+        }
+        Station[] chosen = new Station[1];
+        view.setOnStationClicked(station -> {
+            if (chosen[0] == null) {
+                chosen[0] = station;
+                view.setSelection(station, null);
+                hint.setText("From " + station.getName() + ". Now click the destination.");
+            } else if (!station.equals(chosen[0])) {
+                setJourney(chosen[0], station);
+                dialog.close();
+            }
+        });
+        dialog.showAndWait();
     }
 
     /** Asks the service for the route and the fare of the current choice and shows them. */

@@ -8,10 +8,11 @@ A management system for a metro network: stations, lines and trains,
 trip scheduling, ticket sales with fare calculation, reports, and
 role-based staff access.
 
-**Status:** in development.
+**Status:** every Project 8 requirement is implemented; polish and discussion preparation in progress.
 
 - [Design](docs/design.md) — what we are building and how it fits together
 - [Build plan](docs/plan.md) — 27 tasks in 8 phases, from empty project to discussion day
+- [Demo script](docs/demo-script.md) — every specification line, step by step, for discussion day
 
 ## Run it
 

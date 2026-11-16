@@ -61,6 +61,15 @@ public class Screenshots extends Application {
 
     private static final String[] USERNAMES = {"admin", "controller", "agent", "supervisor"};
 
+    /** The sidebar each demo account must show (docs/demo-script.md, Authorization). */
+    private static final String[][] EXPECTED_MENUS = {
+        {"Dashboard", "Network map", "Stations", "Lines", "Trains", "Trips", "Sell ticket", "Validate", "Refunds",
+            "Fares", "Trip report", "Ticket report", "Revenue report", "Staff users", "Audit log", "My profile"},
+        {"Dashboard", "Network map", "Trips", "My profile"},
+        {"Dashboard", "Network map", "Trips", "Sell ticket", "Validate", "My profile"},
+        {"Dashboard", "Network map", "Trips", "Sell ticket", "Validate", "Refunds", "My profile"},
+    };
+
     private final LinkedList<Runnable> steps = new LinkedList<>();
     private Stage stage;
     private Scene scene;
@@ -114,6 +123,19 @@ public class Screenshots extends Application {
         MainWindow window = new MainWindow(context, () -> { });
         show(window);
 
+        List<String> labels = new ArrayList<>();
+        for (NavItem item : window.getVisibleItems()) {
+            labels.add(item.getLabel());
+        }
+        int account = java.util.Arrays.asList(USERNAMES).indexOf(username);
+        List<String> expected = java.util.Arrays.asList(EXPECTED_MENUS[account]);
+        check(username + " sees exactly the sidebar in the demo script", labels.equals(expected));
+        if (!labels.equals(expected)) {
+            System.out.println("              shown:    " + labels);
+            System.out.println("              expected: " + expected);
+        }
+        checkRefusedBehindTheScreen(username);
+
         List<Runnable> forThisAccount = new ArrayList<>();
         for (NavItem item : window.getVisibleItems()) {
             String name = username + "-" + item.getLabel().toLowerCase().replace(' ', '-');
@@ -122,6 +144,30 @@ public class Screenshots extends Application {
         }
         addScriptedChecks(username, window, forThisAccount);
         steps.addAll(0, forThisAccount);
+    }
+
+    /** Calls one service directly, skipping the screens, as a role that may not use it. */
+    private void checkRefusedBehindTheScreen(String username) {
+        String what;
+        Runnable forbidden;
+        if (username.equals("controller")) {
+            what = "the controller cannot sell a ticket even through the service";
+            forbidden = () -> context.getTicketService().mySalesToday();
+        } else if (username.equals("agent")) {
+            what = "the agent cannot refund even through the service";
+            forbidden = () -> context.getTicketService().refundCheck("TKT-000001");
+        } else if (username.equals("supervisor")) {
+            what = "the supervisor cannot open reports even through the service";
+            forbidden = () -> context.getReportService().revenueReport(LocalDate.now(), LocalDate.now());
+        } else {
+            return;
+        }
+        try {
+            forbidden.run();
+            check(what, false);
+        } catch (metro.exception.AccessDeniedException e) {
+            check(what, e.getMessage().equals("You do not have permission to do this."));
+        }
     }
 
     /** Extra actions for some accounts: things a person would click through by hand. */

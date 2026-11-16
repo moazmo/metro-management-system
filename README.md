@@ -126,6 +126,7 @@ services never touch JavaFX, so the rules are tested without a window.
 
 ## Documentation
 
+- [شرح المشروع بالعربي (PDF)](docs/explained/metro-explained.pdf) — the whole project explained from zero, in Arabic, with one section per team member
 - [Design](docs/design.md) — what the system does and why it is built this way
 - [Class diagrams](docs/class-diagram.md) — model, storage, services, errors, screens
 - [Demo script](docs/demo-script.md) — every specification line, step by step

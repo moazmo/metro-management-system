@@ -1,0 +1,1123 @@
+<title>دليل مشروع المترو</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Reem+Kufi:wght@600;700&display=swap">
+<style>
+/* Layout: a metro map. The contents run down the side as a metro line, one coloured station per section;
+   the reading column sits beside it. Each member's part keeps its own line colour. */
+:root {
+  --bg: #F4F6F8;
+  --surface: #FFFFFF;
+  --ink: #18222D;
+  --muted: #566372;
+  --rule: #DAE1E8;
+  --accent: #0B6E99;
+  --accent-soft: #E3F1F7;
+  --code-bg: #13202B;
+  --code-fg: #E2ECF4;
+  --code-dim: #8FA3B5;
+  --code-key: #F2B544;
+  --code-str: #8FD694;
+  --tip-bg: #FFF7E0;
+  --tip-rule: #E6B84A;
+  --p1: #0B6E99;
+  --p2: #7B4BB0;
+  --p3: #D32F2F;
+  --p4: #D99A00;
+  --p5: #2E7D32;
+  --p6: #C2571A;
+  --font-display: "Reem Kufi", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
+  --font-code: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151C; --surface: #151F29; --ink: #E5ECF2; --muted: #9AA8B6; --rule: #283642;
+    --accent: #52B5E0; --accent-soft: #15303D; --code-bg: #0A1219; --code-fg: #E2ECF4; --code-dim: #7F93A5;
+    --code-key: #F2B544; --code-str: #8FD694; --tip-bg: #2B2410; --tip-rule: #A78022;
+    --p1: #52B5E0; --p2: #A98BD9; --p3: #EF6B6B; --p4: #F2C14E; --p5: #6CC070; --p6: #EE9058;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151C; --surface: #151F29; --ink: #E5ECF2; --muted: #9AA8B6; --rule: #283642;
+  --accent: #52B5E0; --accent-soft: #15303D; --code-bg: #0A1219; --code-fg: #E2ECF4; --code-dim: #7F93A5;
+  --code-key: #F2B544; --code-str: #8FD694; --tip-bg: #2B2410; --tip-rule: #A78022;
+  --p1: #52B5E0; --p2: #A98BD9; --p3: #EF6B6B; --p4: #F2C14E; --p5: #6CC070; --p6: #EE9058;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16.5px; line-height: 1.85; }
+.wrap { direction: rtl; max-width: 1180px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 40px; }
+main { min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+
+/* ---------- side line (contents) ---------- */
+.route { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start;
+  max-height: calc(100vh - 40px); overflow-y: auto; padding-inline-end: 4px; }
+.route h2 { font-family: var(--font-display); font-size: 15px; margin: 0 0 12px; color: var(--muted); letter-spacing: .02em; }
+.route ol { list-style: none; margin: 0; padding: 0; position: relative; }
+.route ol::before { content: ""; position: absolute; top: 10px; bottom: 10px; right: 8px; width: 4px; border-radius: 2px; background: var(--rule); }
+.route li { position: relative; padding: 5px 30px 5px 0; }
+.route li::before { content: ""; position: absolute; right: 2px; top: 13px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--surface); border: 4px solid var(--c, var(--accent)); box-sizing: border-box; }
+.route li.major::before { width: 20px; height: 20px; right: 0; top: 11px; }
+.route a { color: var(--ink); text-decoration: none; font-size: 14.5px; line-height: 1.5; display: block; }
+.route a:hover, .route a:focus-visible { color: var(--accent); }
+.route small { display: block; color: var(--muted); font-size: 12.5px; }
+
+/* ---------- reading blocks ---------- */
+.hero { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 28px 30px; display: flex; flex-direction: column; gap: 12px; }
+.hero .lines { display: flex; gap: 6px; }
+.hero .lines span { height: 6px; flex: 1; border-radius: 3px; }
+h1 { font-family: var(--font-display); font-size: clamp(30px, 5vw, 44px); line-height: 1.25; margin: 6px 0 0; text-wrap: balance; }
+.lead { font-size: 18px; color: var(--muted); margin: 0; max-width: 62ch; }
+section.block { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 26px 30px; display: flex; flex-direction: column; gap: 14px; }
+section.block > * { margin: 0; }
+h2.h { font-family: var(--font-display); font-size: 27px; line-height: 1.3; text-wrap: balance; display: flex; align-items: center; gap: 12px; }
+h2.h .dot { width: 18px; height: 18px; border-radius: 50%; border: 5px solid var(--c, var(--accent)); flex: none; box-sizing: border-box; }
+h3 { font-size: 19px; margin: 10px 0 0; line-height: 1.5; color: var(--ink); }
+p, li { max-width: 72ch; }
+ul, ol { padding-inline-start: 22px; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+strong { font-weight: 700; }
+.en { direction: ltr; unicode-bidi: isolate; font-family: var(--font-code); font-size: .9em; background: var(--accent-soft); color: var(--ink); padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
+.muted { color: var(--muted); }
+
+/* part header band */
+.part-head { border-top: 6px solid var(--c); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.tag { align-self: flex-start; font-size: 13px; font-weight: 700; letter-spacing: .03em; color: var(--surface); background: var(--c); padding: 2px 12px; border-radius: 20px; }
+
+/* code */
+pre.code { direction: ltr; text-align: left; background: var(--code-bg); color: var(--code-fg); font-family: var(--font-code); font-size: 13.5px;
+  line-height: 1.65; padding: 16px 18px; border-radius: 10px; overflow-x: auto; margin: 0; white-space: pre; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+pre.code .c { color: var(--code-dim); }
+pre.code .k { color: var(--code-key); }
+pre.code .s { color: var(--code-str); }
+.explain { display: flex; flex-direction: column; gap: 6px; border-inline-start: 3px solid var(--rule); padding-inline-start: 14px; }
+.explain div { max-width: 72ch; }
+.explain b { direction: ltr; unicode-bidi: isolate; font-family: var(--font-code); font-weight: 500; font-size: .88em; background: var(--accent-soft); padding: 0 5px; border-radius: 4px; }
+
+/* tables */
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 13.5px; }
+td code, th code { direction: ltr; unicode-bidi: isolate; font-family: var(--font-code); font-size: .9em; }
+
+/* call-outs */
+.tip { background: var(--tip-bg); border-inline-start: 4px solid var(--tip-rule); border-radius: 8px; padding: 12px 16px; }
+.say { direction: ltr; text-align: left; background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 14px; font-size: 15px; line-height: 1.6; }
+.say::before { content: "Say it in English: "; font-weight: 700; color: var(--accent); }
+.qa { display: flex; flex-direction: column; gap: 14px; padding: 0; list-style: none; }
+.qa li { max-width: none; border-bottom: 1px dashed var(--rule); padding-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+.qa .q { font-weight: 700; }
+.qa .q::before { content: "س: "; color: var(--accent); }
+.qa .a::before { content: "ج: "; color: var(--muted); font-weight: 700; }
+
+/* the restaurant / layers diagram */
+.flow { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
+.flow .box { flex: 1 1 150px; min-width: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.flow .box b { font-size: 15.5px; }
+.flow .box span { color: var(--muted); font-size: 14px; line-height: 1.6; }
+.flow .arrow { align-self: center; color: var(--muted); font-size: 22px; }
+.oop { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.oop > div { background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.oop h4 { margin: 0; font-size: 16.5px; }
+.oop p { margin: 0; font-size: 15px; }
+
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.foot { text-align: center; color: var(--muted); font-size: 14px; }
+
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .route { position: static; max-height: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 18px 10px; }
+  section.block, .hero { padding: 20px 18px; }
+  h2.h { font-size: 23px; }
+}
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: var(--surface); }
+  .route { display: none; }
+  .wrap { grid-template-columns: minmax(0, 1fr); padding: 0; max-width: none; }
+  pre.code { white-space: pre-wrap; overflow: visible; font-size: 9.5pt; }
+  .tbl { overflow: visible; }
+  body { font-size: 12.5pt; }
+  section.block, .hero { border: none; padding: 0 0 8px; }
+  .part-head { break-before: page; }
+  .newpage { break-before: page; }
+  pre.code, .tip, .say, table, .flow, .oop > div { break-inside: avoid; }
+}
+</style>
+
+<div class="wrap">
+
+<nav class="route" aria-label="المحتويات">
+  <h2>خط الرحلة</h2>
+  <ol>
+    <li class="major"><a href="#start">ابدأ من هنا<small>ازاي تقرا الدليل</small></a></li>
+    <li><a href="#story">المشروع بيعمل إيه</a></li>
+    <li><a href="#basics">البرمجة من الصفر</a></li>
+    <li><a href="#oop">الـ OOP بالبلدي</a></li>
+    <li><a href="#layers">المشروع من جوه</a></li>
+    <li><a href="#files">ازاي البيانات بتتحفظ</a></li>
+    <li><a href="#roles">مين يقدر يعمل إيه</a></li>
+    <li class="major" style="--c: var(--p1)"><a href="#part1">الجزء ١ — الأساس<small>قائد الفريق</small></a></li>
+    <li class="major" style="--c: var(--p2)"><a href="#part2">الجزء ٢ — المستخدمين</a></li>
+    <li class="major" style="--c: var(--p3)"><a href="#part3">الجزء ٣ — الإدارة</a></li>
+    <li class="major" style="--c: var(--p4)"><a href="#part4">الجزء ٤ — الجدول والرحلات</a></li>
+    <li class="major" style="--c: var(--p5)"><a href="#part5">الجزء ٥ — التذاكر</a></li>
+    <li class="major" style="--c: var(--p6)"><a href="#part6">الجزء ٦ — التقارير</a></li>
+    <li><a href="#day">يوم المناقشة</a></li>
+    <li><a href="#words">قاموس الكلمات</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="hero" id="start">
+  <div class="lines" aria-hidden="true"><span style="background: var(--p3)"></span><span style="background: var(--p4)"></span><span style="background: var(--p5)"></span><span style="background: var(--p1)"></span></div>
+  <h1>دليل مشروع المترو</h1>
+  <p class="lead">شرح المشروع كله، من غير ما تكون عارف أي حاجة في البرمجة. نظام إدارة مترو مكتوب بلغة Java — مشروع رقم ٨ في مادة Programming Language 2.</p>
+</header>
+
+<section class="block">
+  <h2 class="h"><span class="dot"></span>ازاي تقرا الدليل ده</h2>
+  <p>الدليل متقسم زي خط المترو: محطات ورا بعض. <strong>كل واحد في الفريق</strong> يقرا أول ٦ محطات (لحد "مين يقدر يعمل إيه")، وبعدين يقرا <strong>الجزء بتاعه</strong> كويس جدًا، وبعدين "يوم المناقشة".</p>
+  <ul>
+    <li>الكلام عربي، بس أسماء الحاجات في الكود سبناها إنجليزي زي ما هي، زي <span class="en">Station</span> و <span class="en">Ticket</span>، عشان الدكتور هيسألك بيها.</li>
+    <li>جنب كل فكرة مهمة فيه صندوق أزرق مكتوب فيه جملة بالإنجليزي. دي الجملة اللي تقولها للدكتور لو سألك.</li>
+    <li>كل جزء فيه "لو الدكتور سألك": أسئلة متوقعة وإجاباتها.</li>
+    <li>لو حابب تقرا نفس الكلام بالإنجليزي بتفاصيل أكتر: فيه ملف لكل جزء في <span class="en">docs/modules/</span> على GitHub.</li>
+  </ul>
+  <div class="tip"><strong>مش لازم تحفظ الكود.</strong> المطلوب إنك تفهم كل كلاس في جزءك بيعمل إيه وليه، وتعرف تفتحه وتشاور على المكان اللي فيه الفكرة. ده اللي عليه الـ ٥ درجات الفردي.</div>
+</section>
+
+<section class="block" id="story">
+  <h2 class="h"><span class="dot"></span>المشروع بيعمل إيه؟</h2>
+  <p>تخيل إنك شغال في مترو القاهرة. فيه ناس كتير شغالة، وكل واحد له شغل مختلف:</p>
+  <div class="tbl"><table>
+    <tr><th>الشخص</th><th>في البرنامج اسمه</th><th>بيعمل إيه</th></tr>
+    <tr><td>مدير النظام</td><td><code>Admin</code></td><td>بيضيف المحطات والخطوط والقطارات، وبيعمل حسابات الموظفين، وبيشوف التقارير والفلوس. يقدر يعمل كل حاجة.</td></tr>
+    <tr><td>مسؤول التشغيل</td><td><code>Operations controller</code></td><td>بيعمل جدول الرحلات: القطر ده يطلع الساعة كام ويوصل الساعة كام، ويسجل التأخير والإلغاء.</td></tr>
+    <tr><td>موظف الشباك</td><td><code>Ticket agent</code></td><td>بيبيع التذاكر وبيتأكد من التذكرة على البوابة.</td></tr>
+    <tr><td>مشرف المحطة</td><td><code>Station supervisor</code></td><td>نفس شغل موظف الشباك، وكمان يقدر يرجّع فلوس التذكرة (refund).</td></tr>
+  </table></div>
+  <p>البرنامج بيخلي كل واحد يدخل باسم المستخدم والباسورد بتوعه، ويشوف <strong>بس</strong> الحاجات المسموح له بيها. البيانات كلها (المحطات، التذاكر، الرحلات...) بتتحفظ في <strong>ملفات نصية</strong> عادية جوه فولدر اسمه <span class="en">data</span>، فلو قفلت البرنامج وفتحته تاني تلاقي كل حاجة زي ما هي.</p>
+  <p>البرنامج جاهز ومعاه بيانات تجريبية حقيقية: <strong>مترو القاهرة</strong> بـ ٨٤ محطة (بالعربي والإنجليزي) على الخط الأول والتاني والتالت وفرع جامعة القاهرة، و١٢ قطر، وأسبوع رحلات، وأسبوع تذاكر مبيوعة.</p>
+  <h3>المطلوب من الكلية (المشروع ٨) في ٥ أجزاء</h3>
+  <div class="tbl"><table>
+    <tr><th>الجزء</th><th>المطلوب ببساطة</th><th>مين في الفريق</th></tr>
+    <tr><td>1 — Administrative</td><td>إضافة وتعديل وحذف وبحث المحطات، الخطوط وترتيب محطاتها، القطارات</td><td>الجزء ٣</td></tr>
+    <tr><td>2 — Schedule</td><td>عمل رحلات بمعاد طلوع ووصول، تعديلها وإلغاؤها، حالتها، ومنع إن قطر يبقى في رحلتين في نفس الوقت</td><td>الجزء ٤</td></tr>
+    <tr><td>3 — Tickets</td><td>بيع التذاكر، حساب السعر من عدد المحطات، التأكد من التذكرة، وإرجاع الفلوس</td><td>الجزء ٥</td></tr>
+    <tr><td>4 — Reports</td><td>تقرير الرحلات، عدد التذاكر لكل مشوار، والإيرادات في فترة</td><td>الجزء ٦</td></tr>
+    <tr><td>5 — Users</td><td>تسجيل الدخول والخروج، تعديل البيانات الشخصية ما عدا الـ ID، والصلاحيات</td><td>الجزء ٢</td></tr>
+  </table></div>
+  <p>والجزء ١ (الأساس) هو اللي ماسك كل ده مع بعض: الحفظ في الملفات، الشاشة الرئيسية، القايمة، الخريطة، ولوحة البيانات.</p>
+</section>
+
+<section class="block newpage" id="basics">
+  <h2 class="h"><span class="dot"></span>البرمجة من الصفر</h2>
+  <p>قبل ما نتكلم عن المشروع، محتاجين نتفق على شوية كلمات. هنمشي واحدة واحدة، وكل كلمة بمثال من المشروع بتاعنا.</p>
+
+  <h3>البرنامج يعني إيه؟ و Java إيه؟</h3>
+  <p><strong>البرنامج</strong> = مجموعة أوامر مكتوبة بالترتيب، الكمبيوتر بينفذها. زي وصفة أكل: "حط مية، ولّع النار، استنى لما تغلي".</p>
+  <p><strong>Java</strong> = اللغة اللي كتبنا بيها الأوامر دي. بنكتب الكود في ملفات آخرها <span class="en">.java</span>، وبعدين برنامج اسمه compiler بيحولها لحاجة الكمبيوتر يفهمها، وبعدين الـ JVM بيشغلها. مشروعنا فيه ١١٦ ملف Java.</p>
+  <p><strong>JavaFX</strong> = مكتبة جوه Java بنرسم بيها الشاشات: الزراير والجداول والخانات اللي بتكتب فيها. الكلية طالبة GUI (واجهة رسومية) ولو مش موجودة بيتخصم ٥ درجات — وإحنا عاملينها.</p>
+
+  <h3>الكلاس والأوبجكت (Class و Object)</h3>
+  <p>دي أهم فكرة في المادة كلها. فكر في <strong>استمارة فاضية</strong> مكتوب فيها: "اسم المحطة: ___ ، الاسم بالعربي: ___ ، مفتوحة ولا مقفولة: ___". الاستمارة الفاضية دي هي <strong>الكلاس</strong>.</p>
+  <p>لما تملا الاستمارة: "حلوان ، حلوان ، مفتوحة" — النسخة المليانة دي اسمها <strong>أوبجكت</strong>. وممكن تملا استمارات تانية: "السادات"، "عتبة"... كلهم أوبجكتس من نفس الكلاس.</p>
+  <pre class="code"><span class="k">public class</span> Station {          <span class="c">// the blank form: what every station has</span>
+    <span class="k">private</span> String name;            <span class="c">// "Helwan"</span>
+    <span class="k">private</span> String nameAr;          <span class="c">// "حلوان"</span>
+    <span class="k">private</span> StationStatus status;   <span class="c">// OPEN or CLOSED</span>
+}
+
+Station helwan = <span class="k">new</span> Station(<span class="s">"STN-001"</span>, <span class="s">"Helwan"</span>, <span class="s">"حلوان"</span>, StationStatus.OPEN);  <span class="c">// one filled-in form</span></pre>
+  <div class="explain">
+    <div><b>public class Station</b> = بنعرّف استمارة جديدة اسمها Station.</div>
+    <div><b>private String name</b> = خانة في الاستمارة اسمها name، فيها كلام (String = نص).</div>
+    <div><b>new Station(...)</b> = املا استمارة جديدة بالبيانات دي. كلمة <span class="en">new</span> معناها "اعمل أوبجكت جديد".</div>
+  </div>
+  <div class="say">A class is the design or template; an object is one real instance made from it. Station is the class, Helwan is an object.</div>
+
+  <h3>الخانات والأفعال (Fields و Methods)</h3>
+  <p><strong>Field</strong> = خانة بيانات جوه الأوبجكت (الاسم، الحالة). <strong>Method</strong> = حاجة الأوبجكت يعرف يعملها أو يجاوب عليها. مثلًا المحطة تعرف تجاوب "انتي مفتوحة؟":</p>
+  <pre class="code"><span class="k">public boolean</span> isOpen() {
+    <span class="k">return</span> status == StationStatus.OPEN;   <span class="c">// true if open, false if closed</span>
+}</pre>
+  <div class="explain">
+    <div><b>boolean</b> = الإجابة يا "true" (أيوه) يا "false" (لأ).</div>
+    <div><b>return</b> = رجّع الإجابة دي للي سألك.</div>
+  </div>
+
+  <h3>الـ Constructor</h3>
+  <p>ده method خاص بيشتغل مرة واحدة <strong>لحظة ولادة</strong> الأوبجكت، عشان يملا الخانات ويتأكد إنها صح. اسمه نفس اسم الكلاس.</p>
+  <pre class="code"><span class="k">public</span> Station(String id, String name, String nameAr, StationStatus status) {
+    <span class="k">super</span>(id);          <span class="c">// give the id to the parent class (Entity)</span>
+    setName(name);      <span class="c">// checks the name is not empty</span>
+    setNameAr(nameAr);
+    setStatus(status);
+}</pre>
+
+  <h3>الـ Enum</h3>
+  <p>قايمة اختيارات ثابتة مش هتتغير. حالة المحطة يا مفتوحة يا مقفولة، ومفيش حاجة تالتة:</p>
+  <pre class="code"><span class="k">public enum</span> StationStatus { OPEN, CLOSED }</pre>
+  <p>في المشروع عندنا enums كتير: حالة القطر (Active / In maintenance / Retired)، حالة الرحلة (Scheduled / Delayed / Completed / Cancelled)، نوع التذكرة (Standard / Student / Senior)، الأدوار، والصلاحيات.</p>
+
+  <h3>القايمة (List)</h3>
+  <p>لما نحتاج نشيل حاجات كتير من نفس النوع: الخط بيشيل <strong>قايمة محطات</strong> بالترتيب. <span class="en">List&lt;Station&gt;</span> معناها "قايمة كل عنصر فيها محطة". و <span class="en">ArrayList</span> هو نوع القايمة اللي بنستخدمه.</p>
+
+  <h3>if و for</h3>
+  <p><strong>if</strong> = "لو الشرط ده صح، اعمل كذا". <strong>for</strong> = "كرر الكلام ده على كل عنصر في القايمة".</p>
+  <pre class="code"><span class="k">for</span> (Station station : stations.findAll()) {        <span class="c">// go over every station, one by one</span>
+    <span class="k">if</span> (station.getName().equalsIgnoreCase(name)) {  <span class="c">// same name, ignoring capital letters?</span>
+        <span class="k">return</span> station;                              <span class="c">// found it</span>
+    }
+}
+<span class="k">return null</span>;   <span class="c">// went over all of them and found nothing</span></pre>
+
+  <h3>الـ Exception (الإنذار)</h3>
+  <p>لما حد يحاول يعمل حاجة غلط (يضيف محطة من غير اسم، يبيع تذكرة لمحطة مقفولة)، الكود "بيرمي إنذار" بكلمة <span class="en">throw</span>. الإنذار بيطلع لفوق لحد ما الشاشة "تمسكه" وتعرض رسالته للمستخدم في شريط أحمر — البرنامج عمره ما بيقفل فجأة.</p>
+  <pre class="code"><span class="k">if</span> (name == <span class="k">null</span> || name.isBlank()) {
+    <span class="k">throw new</span> ValidationException(<span class="s">"Station name is required"</span>);
+}</pre>
+  <p>عملنا عيلة إنذارات خاصة بينا، كلها طالعة من <span class="en">MetroException</span>: غلطة في البيانات (<span class="en">ValidationException</span>)، مش لاقي حاجة (<span class="en">NotFoundException</span>)، مش مسموح لك (<span class="en">AccessDeniedException</span>)، ملف بايظ (<span class="en">DataFileException</span>)، وقطر في رحلتين في نفس الوقت (<span class="en">ScheduleConflictException</span>).</p>
+
+  <h3>الاختبارات (Tests)</h3>
+  <p>ده كود تاني بيجرب الكود الأصلي ويتأكد إنه بيدي النتيجة الصح. مثلًا اختبار بيقول: "بيع تذكرة طالب بسعر أصلي ٨ جنيه — لازم تطلع ٤ جنيه". عندنا <strong>٢٨٩ اختبار</strong> وكلهم شغالين. ده بيطمنك إن أي حاجة الدكتور هيجربها هتشتغل.</p>
+</section>
+
+<section class="block newpage" id="oop">
+  <h2 class="h"><span class="dot"></span>الـ OOP بالبلدي</h2>
+  <p>OOP يعني Object-Oriented Programming: إنك تبني البرنامج من أوبجكتس، كل واحد مسؤول عن نفسه. الكلية حاطة عليها <strong>٥ درجات</strong>، والدكتور هيسأل عن ٥ أفكار. هنا كل فكرة بمثال من مشروعنا:</p>
+  <div class="oop">
+    <div><h4>١. Encapsulation — التغليف</h4><p>الخانات <span class="en">private</span>: محدش من بره يقدر يلمسها مباشرة. اللي عايز يغيرها لازم يعدي على method بيتشيك الأول. زي الخزنة: مش بتمد إيدك جواها، بتطلب من الصراف.</p><p><strong>مثالنا:</strong> المستخدم مالوش <span class="en">setId</span> خالص، فالـ ID مستحيل يتغير — وده بالظبط طلب الكلية 5b.</p></div>
+    <div><h4>٢. Inheritance — الوراثة</h4><p>كلاس "ابن" بياخد كل حاجة من كلاس "أب" ويزود عليها، بكلمة <span class="en">extends</span>.</p><p><strong>مثالنا:</strong> مشرف المحطة <span class="en">StationSupervisor extends TicketAgent</span>: بياخد كل صلاحيات موظف الشباك ويزود عليها صلاحية الإرجاع.</p></div>
+    <div><h4>٣. Polymorphism — تعدد الأشكال</h4><p>نفس السؤال، وكل أوبجكت يجاوب بطريقته. اللي بيسأل مش محتاج يعرف هو بيكلم مين.</p><p><strong>مثالنا:</strong> بنسأل أي تذكرة <span class="en">getFare()</span> "سعرك كام؟" — العادية تقول السعر كامل، الطالب تقول النص، كبير السن تقول ٧٠٪.</p></div>
+    <div><h4>٤. Abstraction — التجريد</h4><p>كلاس "ناقص" معمول عشان يتورث بس، مينفعش تعمل منه أوبجكت (<span class="en">abstract</span>). أو <span class="en">interface</span>: وعد بقايمة أفعال من غير تفاصيل.</p><p><strong>مثالنا:</strong> <span class="en">Ticket</span> كلاس abstract: مفيش حاجة اسمها "تذكرة وخلاص"، لازم تبقى عادية أو طالب أو كبير سن.</p></div>
+    <div><h4>٥. Relationships — العلاقات</h4><p>إزاي الأوبجكتس مربوطة ببعض: <strong>Association</strong> (بيستخدم بعض)، <strong>Aggregation</strong> (بيشيل حاجات ليها حياة لوحدها)، <strong>Composition</strong> (الجزء بيموت لو الكل مات).</p><p><strong>مثالنا:</strong> الرحلة مرتبطة بقطر وخط (association). الخط بيشيل محطات، والمحطة ممكن تبقى على خطين (aggregation). المشوار مكون من أجزاء (composition).</p></div>
+  </div>
+  <div class="say">Encapsulation hides data behind methods; inheritance reuses a parent class; polymorphism lets the same call behave differently per object; abstraction defines what without how; relationships connect objects.</div>
+  <p>في كل جزء تحت هتلاقي الـ ٥ أفكار دول <strong>جوه الكلاسات بتاعتك أنت</strong>، عشان تقدر تشرحهم من شغلك.</p>
+</section>
+
+<section class="block newpage" id="layers">
+  <h2 class="h"><span class="dot"></span>المشروع من جوه: مطعم بـ ٤ أدوار</h2>
+  <p>فكر في البرنامج كمطعم. كل دور له شغلانة واحدة، ومحدش بيعمل شغل التاني:</p>
+  <div class="flow">
+    <div class="box"><b>الجرسون = الشاشات</b><span>فولدر <span class="en">ui</span>. بياخد طلبك (الزرار اللي دوست عليه) ويوريك النتيجة. مبيطبخش ومبيقررش حاجة.</span></div>
+    <div class="arrow" aria-hidden="true">←</div>
+    <div class="box"><b>الشيف = القواعد</b><span>فولدر <span class="en">service</span>. هنا كل القواعد: ينفع ولا لأ؟ مسموح لك ولا لأ؟ السعر كام؟</span></div>
+    <div class="arrow" aria-hidden="true">←</div>
+    <div class="box"><b>أمين المخزن = الحفظ</b><span>فولدر <span class="en">repository</span>. هو الوحيد اللي بيكلم الملفات: يقرا ويكتب.</span></div>
+    <div class="arrow" aria-hidden="true">←</div>
+    <div class="box"><b>الرفوف = الملفات</b><span>فولدر <span class="en">data</span>. ملفات txt فيها البيانات سطر سطر.</span></div>
+  </div>
+  <p>وفيه فولدر خامس اسمه <span class="en">model</span>: دي "الحاجات" اللي الكل بيتكلم عنها — المحطة، الخط، القطر، الرحلة، التذكرة، المستخدم. زي الأطباق في المطعم: الجرسون بيشيلها والشيف بيعملها والمخزن بيخزنها.</p>
+  <div class="tip"><strong>ليه كده؟</strong> لو كل حاجة متقسمة، الغلط بيبقى سهل تلاقيه، وتقدر تختبر القواعد من غير ما تفتح شاشة. وكمان ده بيخلي كل واحد في الفريق ماسك حتة واضحة.</div>
+
+  <h3>رحلة ضغطة زرار: بيع تذكرة</h3>
+  <ol>
+    <li>موظف الشباك يختار "من حلوان" و"لجامعة القاهرة" ويدوس <strong>Sell</strong> في شاشة <span class="en">SellTicketScreen</span> (الجرسون).</li>
+    <li>الشاشة بتنادي <span class="en">ticketService.sell(...)</span> (الشيف).</li>
+    <li>الشيف يسأل الأول: "اللي داخل ده مسموح له يبيع؟" عن طريق <span class="en">session.require(SELL_TICKETS)</span>.</li>
+    <li>يتأكد إن المحطتين مفتوحين، ويطلب من <span class="en">RoutePlanner</span> أقصر طريق: ٢٢ محطة، تغيير في السادات.</li>
+    <li>يجيب السعر من جدول الأسعار: ٢٢ محطة = ١٥ جنيه. ويطلع التذكرة بنوعها.</li>
+    <li>يدي التذكرة لأمين المخزن <span class="en">TicketRepository</span> اللي بيكتبها سطر جديد في <span class="en">tickets.txt</span>.</li>
+    <li>الشاشة ترسم كارت التذكرة بالكود بتاعها، زي التذكرة المطبوعة.</li>
+  </ol>
+
+  <h3>خريطة الفولدرات</h3>
+  <div class="tbl"><table>
+    <tr><th>الفولدر</th><th>فيه إيه</th></tr>
+    <tr><td><code>model/</code></td><td>الحاجات: Station, Line, Train, Trip, Ticket وأنواعها, User وأدواره</td></tr>
+    <tr><td><code>repository/</code></td><td>الحفظ والقراية من الملفات</td></tr>
+    <tr><td><code>service/</code></td><td>القواعد: خدمة لكل جزء، وحساب الطريق والسعر، والبيانات التجريبية</td></tr>
+    <tr><td><code>service/report/</code></td><td>التقارير التلاتة</td></tr>
+    <tr><td><code>ui/</code></td><td>الشاشات (JavaFX)</td></tr>
+    <tr><td><code>exception/</code></td><td>عيلة الإنذارات</td></tr>
+    <tr><td><code>util/</code></td><td>أدوات صغيرة: الفلوس، التواريخ، التحقق من الكلام</td></tr>
+    <tr><td><code>Main.java</code> و <code>AppContext.java</code></td><td>نقطة البداية: بيبنوا كل حاجة أول ما البرنامج يفتح</td></tr>
+  </table></div>
+</section>
+
+<section class="block" id="files">
+  <h2 class="h"><span class="dot"></span>ازاي البيانات بتتحفظ</h2>
+  <p>كل نوع بيانات له ملف نصي لوحده في فولدر <span class="en">data</span>. كل سطر = حاجة واحدة، والخانات مفصولة بعلامة <span class="en">|</span>. ده ملف المحطات:</p>
+  <pre class="code">#next=85
+# id|name|nameAr|status
+STN-001|Helwan|حلوان|OPEN
+STN-002|Ain Helwan|عين حلوان|OPEN</pre>
+  <div class="explain">
+    <div><b>#next=85</b> = الرقم اللي عليه الدور للمحطة الجاية. بيزيد بس ومبيرجعش، فعمر ما رقمين يتكرروا حتى لو مسحت محطة.</div>
+    <div><b># id|name|...</b> = أسماء الخانات، للبني آدم اللي بيقرا الملف بس. البرنامج بيتجاهل أي سطر أوله <span class="en">#</span>.</div>
+    <div><b>STN-001|Helwan|حلوان|OPEN</b> = محطة واحدة: الرقم، الاسم، الاسم بالعربي، الحالة.</div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>الملف</th><th>فيه إيه</th></tr>
+    <tr><td><code>users.txt</code></td><td>حسابات الموظفين (الباسورد متخزن مشفر، مش هو نفسه)</td></tr>
+    <tr><td><code>stations.txt</code> / <code>lines.txt</code> / <code>trains.txt</code></td><td>المحطات / الخطوط وترتيب محطاتها / القطارات</td></tr>
+    <tr><td><code>trips.txt</code></td><td>الرحلات</td></tr>
+    <tr><td><code>fares.txt</code> / <code>tickets.txt</code></td><td>جدول الأسعار / التذاكر</td></tr>
+    <tr><td><code>audit.log</code></td><td>سجل: مين عمل إيه وإمتى (بيتكتب في آخره بس)</td></tr>
+    <tr><td><code>settings.txt</code></td><td>إعدادات صغيرة زي الوضع الفاتح أو الغامق</td></tr>
+  </table></div>
+  <h3>٣ حاجات ذكية في الحفظ</h3>
+  <ul>
+    <li><strong>مفيش ضياع بيانات:</strong> وإحنا بنحفظ، بنكتب ملف مؤقت الأول، وبعدين نبدله بالأصلي مرة واحدة. لو الكهربا قطعت في النص، الملف القديم سليم.</li>
+    <li><strong>أي كلام يتحفظ صح:</strong> لو حد كتب <span class="en">|</span> جوه اسم، بنحط قبلها علامة <span class="en">\</span> عشان البرنامج يفهم إنها جزء من الاسم مش فاصل. والعربي بيتحفظ عادي (UTF-8).</li>
+    <li><strong>لو ملف باظ:</strong> البرنامج مبيقفلش فجأة. بيطلع رسالة تقولك اسم الملف ورقم السطر البايظ.</li>
+  </ul>
+  <div class="say">Each record type has its own text file, one record per line, fields separated by a pipe. We save to a temporary file first and then replace the real one, so a crash never leaves half a file.</div>
+</section>
+
+<section class="block" id="roles">
+  <h2 class="h"><span class="dot"></span>مين يقدر يعمل إيه</h2>
+  <p>فيه ١٤ "صلاحية" (Permission)، وكل دور معاه مجموعة منهم. القايمة اللي على الشمال في البرنامج بتتبني حسب الصلاحيات دي:</p>
+  <div class="tbl"><table>
+    <tr><th>الحساب</th><th>بيشوف في القايمة</th></tr>
+    <tr><td><code>admin</code></td><td>كل حاجة: المحطات، الخطوط، القطارات، الرحلات، التذاكر، الأسعار، التقارير، الموظفين، السجل</td></tr>
+    <tr><td><code>controller</code></td><td>لوحة البيانات، الخريطة، الرحلات (ويقدر يعدل فيها)، بياناته</td></tr>
+    <tr><td><code>agent</code></td><td>لوحة البيانات، الخريطة، الرحلات (فرجة بس)، بيع التذاكر، التحقق منها، بياناته</td></tr>
+    <tr><td><code>supervisor</code></td><td>زي الـ agent بالظبط + إرجاع التذاكر</td></tr>
+  </table></div>
+  <p class="muted">الباسورد لكل الحسابات التجريبية: <span class="en">metro123</span></p>
+  <h3>الحماية على مرتين</h3>
+  <ol>
+    <li><strong>القايمة بتخبي:</strong> الـ agent مش هيشوف زرار التقارير أصلًا.</li>
+    <li><strong>الشيف بيرفض برضه:</strong> حتى لو حد قدر يوصل للزرار بأي طريقة، كل method في الـ service بيبدأ بسطر <span class="en">session.require(...)</span> اللي بيرفض ويقول "You do not have permission to do this."</li>
+  </ol>
+  <div class="say">Authorization is enforced twice: the menu hides what a role may not use, and every service method checks the permission again, so the logic is safe even if the screen is wrong.</div>
+</section>
+
+<!-- ===================== PART 1 ===================== -->
+<section class="block" id="part1" style="--c: var(--p1)">
+  <div class="part-head">
+    <span class="tag">الجزء ١ · قائد الفريق</span>
+    <h2 class="h"><span class="dot"></span>الأساس: اللي شايل المشروع كله</h2>
+  </div>
+  <p>الجزء ده مالوش سطر لوحده في طلبات الكلية، بس من غيره مفيش حاجة تشتغل. هو: فتح البرنامج، الحفظ في الملفات، الشاشة الرئيسية والقايمة، الكلاسات المشتركة اللي كل الشاشات بتورث منها، حساب أقصر طريق، الخريطة، ولوحة البيانات (Dashboard).</p>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li>الشباك الرئيسي: شريط فوق فيه اسم البرنامج وزرار الوضع الغامق واسم المستخدم، والقايمة على الجنب، والشاشة الحالية في النص.</li>
+    <li><strong>Dashboard:</strong> أرقام النهارده (رحلات، متأخرين، تذاكر، إيرادات) — كل رقم بيظهر بس للي مسموح له يشوفه، وخريطة صغيرة، والرحلات الجاية.</li>
+    <li><strong>Network map:</strong> خريطة المترو. تدوس على محطتين، الطريق بينهم ينوّر ويظهر عدد المحطات والتغيير والسعر.</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>Main</code></td><td>أول سطر بيشتغل في البرنامج: بيفتح الشاشة.</td></tr>
+    <tr><td><code>AppContext</code></td><td>"المدير الإداري": أول ما البرنامج يفتح، بيعمل كل أمناء المخازن وكل الشيفات مرة واحدة بالترتيب الصح، ولو أول مرة بيحط البيانات التجريبية.</td></tr>
+    <tr><td><code>Entity</code> و <code>Identifiable</code></td><td>الأب لكل حاجة بتتحفظ (محطة، قطر، تذكرة...). فيه الـ id بس، ومتقفل مبيتغيرش.</td></tr>
+    <tr><td><code>Repository</code></td><td>Interface: وعد بالأفعال اللي أي مخزن لازم يعرفها: هات الكل، دور برقم، احفظ، امسح، رقم جديد.</td></tr>
+    <tr><td><code>FileRepository</code></td><td>المخزن اللي بيشتغل بالملفات. بيعمل كل الشغل المتكرر لكل الأنواع، وبيسيب حاجة واحدة لكل ابن: تحويل السطر لأوبجكت والعكس.</td></tr>
+    <tr><td><code>Settings</code></td><td>ملف الإعدادات (فاتح ولا غامق).</td></tr>
+    <tr><td><code>Fields</code> / <code>Check</code> / <code>Money</code> / <code>Dates</code></td><td>أدوات: تقسيم السطر بعلامة |، التحقق من الكلام، تقريب وكتابة الفلوس (EGP 8.00)، أشكال التواريخ.</td></tr>
+    <tr><td><code>MetroException</code> وعيلته</td><td>الإنذارات اللي شرحناها فوق.</td></tr>
+    <tr><td><code>DemoData</code></td><td>بيعمل البيانات التجريبية أول مرة (المترو، القطارات، الرحلات، التذاكر)، وبيمسحها لو عملت Reset.</td></tr>
+    <tr><td><code>RoutePlanner</code>، <code>Journey</code>، <code>Leg</code></td><td>حساب أقصر طريق بين محطتين. Journey = المشوار كله، Leg = حتة من المشوار على خط واحد.</td></tr>
+    <tr><td><code>MetroApp</code></td><td>البرنامج نفسه: بيبدّل بين شاشة الدخول والشباك الرئيسي.</td></tr>
+    <tr><td><code>MainWindow</code>، <code>Sidebar</code>، <code>NavItem</code></td><td>الشباك الرئيسي والقايمة. NavItem = زرار في القايمة ومعاه الصلاحية اللي لازم تكون عندك عشان يظهر.</td></tr>
+    <tr><td><code>Screen</code>، <code>CrudScreen</code>، <code>FormDialog</code></td><td>الآباء اللي كل الشاشات بتورث منهم: شاشة عادية، شاشة جدول فيه بحث وإضافة وتعديل ومسح، وفورم بتطلع فوق الشاشة.</td></tr>
+    <tr><td><code>StatusBadge</code>، <code>LineSwatch</code>، <code>StationPicker</code>، <code>KpiTile</code></td><td>قطع صغيرة متكررة: شارة الحالة الملونة، دايرة لون الخط، اختيار محطة بالكتابة، مربع رقم في الـ Dashboard.</td></tr>
+    <tr><td><code>Theme</code>، <code>Icons</code></td><td>الشكل (فاتح/غامق) والأيقونات. الوحيدين اللي بيكلموا المكتبات الخارجية.</td></tr>
+    <tr><td><code>MapLayout</code>، <code>NetworkMapView</code>، <code>NetworkMapScreen</code></td><td>الخريطة: الأول بيحسب أماكن المحطات بالأرقام، التاني بيرسمها، التالت الشاشة نفسها.</td></tr>
+    <tr><td><code>DashboardService</code>، <code>DashboardScreen</code></td><td>أرقام النهارده وشاشتها.</td></tr>
+    <tr><td><code>Screenshots</code></td><td>أداة للمطورين بس: بتفتح كل الشاشات لكل حساب وبتجرب ضغطات وبتصور الشاشات. مش جزء من البرنامج اللي هيتسلم.</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: المخزن اللي بيشتغل لكل الأنواع</h3>
+  <pre class="code"><span class="k">public abstract class</span> FileRepository&lt;T <span class="k">extends</span> Identifiable&gt; <span class="k">implements</span> Repository&lt;T&gt; {
+
+    <span class="k">protected abstract</span> T parse(String[] fields);   <span class="c">// one line of the file  -> one object</span>
+    <span class="k">protected abstract</span> String[] format(T item);    <span class="c">// one object -> one line of the file</span>
+
+    <span class="k">public void</span> load() { ... }    <span class="c">// read every line, call parse() for each</span>
+    <span class="k">public void</span> save(T item) { ... }  <span class="c">// add or replace, then rewrite the file safely</span>
+}
+
+<span class="k">public class</span> StationRepository <span class="k">extends</span> FileRepository&lt;Station&gt; {
+    <span class="k">@Override</span>
+    <span class="k">protected</span> Station parse(String[] fields) {
+        <span class="k">return new</span> Station(fields[0], fields[1], fields[2], StationStatus.valueOf(fields[3]));
+    }
+}</pre>
+  <div class="explain">
+    <div><b>abstract class</b> = كلاس ناقص. فيه حاجات مكتوبة وحاجات سايبها للولاد.</div>
+    <div><b>&lt;T&gt;</b> = "أي نوع". المخزن ده ينفع للمحطات وللتذاكر وللمستخدمين... كل ابن بيحدد هو T إيه.</div>
+    <div><b>parse</b> و <b>format</b> = الحاجتين الوحيدين اللي بيختلفوا من نوع لنوع، فسايبينهم للولاد.</div>
+    <div><b>StationRepository</b> = ابن بيقول: "أنا T بتاعي Station، ودي طريقة تحويل السطر لمحطة".</div>
+    <div><b>@Override</b> = "أنا بكتب نسخة الابن من الـ method ده".</div>
+  </div>
+  <p>النتيجة: ٧ مخازن (محطات، خطوط، قطارات، رحلات، مستخدمين، أسعار، تذاكر) كلهم بيورثوا القراية والحفظ والأرقام من مكان واحد. لو فيه غلطة في الحفظ بتتصلح مرة واحدة.</p>
+
+  <h3>حساب أقصر طريق (RoutePlanner)</h3>
+  <p>تخيل إنك رميت حجر في مية عند محطة حلوان. الموجة الأولى بتوصل لكل المحطات اللي جنبها على طول (محطة واحدة). الموجة التانية لكل اللي بعدهم (محطتين)، وهكذا. أول موجة توصل لجامعة القاهرة = أقصر طريق. الطريقة دي اسمها <strong>Breadth-First Search</strong>.</p>
+  <ul>
+    <li>محطتين يعتبروا "جيران" لو جنب بعض على أي خط.</li>
+    <li>بعد ما يلاقي الطريق، بيقسمه لأجزاء: كل جزء على خط واحد، والتغيير بيحصل في المحطة اللي فيها خطين (زي السادات).</li>
+    <li>لو مفيش طريق خالص بيرجع رسالة واضحة: "No route between ...".</li>
+  </ul>
+  <div class="say">The route planner uses breadth-first search: it visits all stations one stop away, then two stops away, so the first time it reaches the destination it has the route with the fewest stops.</div>
+
+  <h3>ليه الشاشات عمرها ما بتقفل فجأة؟</h3>
+  <pre class="code"><span class="k">protected void</span> run(Runnable action) {
+    <span class="k">try</span> {
+        action.run();                 <span class="c">// do what the button asked</span>
+    } <span class="k">catch</span> (MetroException e) {
+        showError(e.getMessage());    <span class="c">// a broken rule becomes a red message</span>
+    }
+}</pre>
+  <p>كل زرار في كل شاشة بيعدي على <span class="en">run</span> ده في الأب <span class="en">Screen</span>. لو الشيف رفض ورمى إنذار، هنا بنمسكه ونعرض رسالته.</p>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Encapsulation</h4><p>الـ id في <span class="en">Entity</span> هو <span class="en">private final</span> ومفيش <span class="en">setId</span>: مفيش أي حاجة تقدر تغيره بعد ما يتعمل.</p></div>
+    <div><h4>Inheritance</h4><p>٧ مخازن بيورثوا <span class="en">FileRepository</span>. وكل الشاشات بتورث <span class="en">Screen</span>، و٦ شاشات جداول بيورثوا <span class="en">CrudScreen</span>.</p></div>
+    <div><h4>Polymorphism</h4><p><span class="en">load()</span> بينادي <span class="en">parse()</span>: لو المخزن مخزن محطات يطلع محطة، لو تذاكر يطلع تذكرة. نفس الكود وتصرفات مختلفة.</p></div>
+    <div><h4>Abstraction</h4><p><span class="en">Repository</span> interface: الشيفات بيكلموه من غير ما يعرفوا إن ورا منه ملفات. لو بكره استخدمنا database، نعمل كلاس جديد والشيفات مش هيتغيروا.</p></div>
+    <div><h4>Relationships</h4><p><span class="en">AppContext</span> بيعمل ويمسك كل المخازن والشيفات (composition). <span class="en">Journey</span> مكون من <span class="en">Leg</span>s مالهمش لازمة من غيره (composition).</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">ليه ملفات نصية ومش database؟</span><span class="a">الكلية بتقيّم الـ File Handling، والمادة بتدرّس text files، وأي حد يقدر يفتح الملف ويشوفه بيتغير.</span><div class="say">The rubric grades file handling, and anyone can open the text file and watch it change.</div></li>
+    <li><span class="q">لو البرنامج قفل وهو بيحفظ، البيانات هتضيع؟</span><span class="a">لأ. بنكتب ملف مؤقت الأول وبعدين نبدله بالأصلي في خطوة واحدة. يا الملف الجديد كامل يا القديم زي ما هو.</span></li>
+    <li><span class="q">ليه FileRepository عملته abstract؟</span><span class="a">لأنه مش عارف يحول السطر لمحطة ولا لتذكرة؛ الولاد هما اللي يعرفوا. فمينفعش يتعمل منه أوبجكت لوحده.</span></li>
+    <li><span class="q">إزاي بيطلع رقم جديد (id)؟</span><span class="a">أول سطر في الملف <span class="en">#next=</span> فيه الرقم الجاي. بناخده ونزوده. وحتى لو حد مسح السطر ده بإيده، البرنامج بيبص على أكبر رقم موجود ومبيدّيش رقم أقل منه.</span></li>
+    <li><span class="q">القايمة بتعرف تظهر إيه إزاي؟</span><span class="a">كل زرار (NavItem) مكتوب معاه صلاحية. الـ Sidebar بيسأل: المستخدم ده عنده الصلاحية؟ لو آه يظهر الزرار.</span></li>
+    <li><span class="q">إخفاء الزرار كفاية للأمان؟</span><span class="a">لأ، وعشان كده كل service بيتأكد تاني بـ <span class="en">session.require</span>. الإخفاء للمستخدم، والتأكد في الـ service هو الحماية الحقيقية.</span></li>
+    <li><span class="q">لو عايز تضيف دور خامس؟</span><span class="a">كلاس جديد يورث من User ويقول صلاحياته، وقيمة جديدة في Role، وسطر في UserFactory. القايمة والـ services مش محتاجين تعديل.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>افتح <span class="en">data/stations.txt</span> بالـ Notepad، ضيف محطة بالرقم الجاي وعدّل <span class="en">#next</span>، وافتح البرنامج ودور عليها.</li>
+    <li>امسح خانة من سطر في <span class="en">data/trains.txt</span> وافتح البرنامج: هتطلع رسالة فيها اسم الملف ورقم السطر. رجّع السطر بعدها.</li>
+  </ul>
+</section>
+
+<!-- ===================== PART 2 ===================== -->
+<section class="block" id="part2" style="--c: var(--p2)">
+  <div class="part-head">
+    <span class="tag">الجزء ٢</span>
+    <h2 class="h"><span class="dot"></span>المستخدمين والصلاحيات</h2>
+  </div>
+  <p>طلبات الكلية في جزءك (Module 5):</p>
+  <ul>
+    <li><strong>5a</strong> — الموظفين يقدروا يعملوا تسجيل دخول وخروج.</li>
+    <li><strong>5b</strong> — كل واحد يعدل بياناته الشخصية <strong>ما عدا الـ ID</strong>.</li>
+    <li><strong>5c</strong> — كل واحد يشوف ويستخدم بس الحاجات المسموح له بيها حسب دوره.</li>
+  </ul>
+  <p>وكمان عليك درجتين في الرابريك اسمهم <strong>User Authorization</strong>.</p>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li><strong>Login:</strong> خانة اسم المستخدم والباسورد. لو غلط: "Wrong username or password".</li>
+    <li><strong>Staff users</strong> (للأدمن): جدول الموظفين، إضافة موظف، تعديل، تغيير الدور، باسورد جديد، إيقاف وتفعيل الحساب.</li>
+    <li><strong>My profile</strong> (للكل): يعدل اسمه وتليفونه وإيميله ويغير الباسورد. الـ ID واسم المستخدم والدور ظاهرين رمادي ومينفعش يتعدلوا.</li>
+    <li><strong>Audit log</strong> (للأدمن): سجل كل حاجة حصلت: مين، عمل إيه، إمتى، مع بحث.</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>User</code></td><td>الأب (abstract) لأي حساب: الاسم، التليفون، الإيميل، الباسورد المشفر، شغال ولا موقوف.</td></tr>
+    <tr><td><code>Admin</code>، <code>OperationsController</code>، <code>TicketAgent</code>، <code>StationSupervisor</code></td><td>الأدوار الأربعة. كل واحد بيقول صلاحياته إيه.</td></tr>
+    <tr><td><code>Role</code></td><td>Enum بالأدوار الأربعة وأسمائها.</td></tr>
+    <tr><td><code>Permission</code></td><td>Enum بالـ ١٤ صلاحية (يدير المحطات، يبيع تذاكر، يشوف التقارير...).</td></tr>
+    <tr><td><code>UserFactory</code></td><td>"المصنع": تديله الدور، يعملك أوبجكت من الكلاس الصح.</td></tr>
+    <tr><td><code>PasswordHasher</code></td><td>بيشفر الباسورد قبل ما يتحفظ.</td></tr>
+    <tr><td><code>Session</code></td><td>فاكر مين داخل دلوقتي، وبيجاوب "مسموح له؟" — و<span class="en">require</span> بيرفض لو لأ.</td></tr>
+    <tr><td><code>AuthService</code></td><td>الدخول والخروج.</td></tr>
+    <tr><td><code>UserService</code></td><td>كل قواعد الحسابات: إضافة، تعديل، تغيير دور، إيقاف، بيانات شخصية.</td></tr>
+    <tr><td><code>UserRepository</code></td><td>مخزن <span class="en">users.txt</span>.</td></tr>
+    <tr><td><code>AuditLog</code>، <code>AuditEntry</code></td><td>ملف السجل <span class="en">audit.log</span> وسطر واحد منه.</td></tr>
+    <tr><td><code>LoginScreen</code>، <code>StaffUsersScreen</code>، <code>UserFormDialog</code>، <code>ProfileScreen</code>، <code>AuditLogScreen</code></td><td>الشاشات.</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: كل دور بيقول صلاحياته</h3>
+  <pre class="code"><span class="k">public abstract class</span> User <span class="k">extends</span> Entity {
+    <span class="k">private final</span> String username;                 <span class="c">// final + no setter = can never change</span>
+    <span class="k">public abstract</span> Set&lt;Permission&gt; getPermissions();   <span class="c">// every role must answer this</span>
+
+    <span class="k">public boolean</span> can(Permission permission) {
+        <span class="k">return</span> getPermissions().contains(permission);
+    }
+}
+
+<span class="k">public class</span> StationSupervisor <span class="k">extends</span> TicketAgent {
+    <span class="k">@Override</span>
+    <span class="k">public</span> Set&lt;Permission&gt; getPermissions() {
+        Set&lt;Permission&gt; permissions = <span class="k">super</span>.getPermissions();  <span class="c">// everything a ticket agent has</span>
+        permissions.add(Permission.REFUND_TICKETS);             <span class="c">// ... plus refunds</span>
+        <span class="k">return</span> permissions;
+    }
+}</pre>
+  <div class="explain">
+    <div><b>abstract ... getPermissions()</b> = كل دور لازم يجاوب على السؤال ده بطريقته.</div>
+    <div><b>can(...)</b> = بيسأل الدور عن صلاحياته ويشوف الصلاحية المطلوبة موجودة ولا لأ. مش بيعرف ولا محتاج يعرف هو بيكلم أدمن ولا موظف — ده الـ polymorphism.</div>
+    <div><b>super.getPermissions()</b> = "هات صلاحيات أبويا" (موظف الشباك)، وبعدين بنزود عليها.</div>
+  </div>
+
+  <h3>الحارس على كل باب</h3>
+  <pre class="code"><span class="k">public void</span> require(Permission permission) {
+    <span class="k">if</span> (!can(permission)) {
+        <span class="k">throw new</span> AccessDeniedException(<span class="s">"You do not have permission to do this."</span>);
+    }
+}</pre>
+  <p>كل method في كل service في المشروع بيبدأ بسطر زي <span class="en">session.require(Permission.MANAGE_USERS)</span>. ده "الحارس" اللي بيرفض أي حد مش مسموح له، حتى لو الشاشة غلطت.</p>
+
+  <h3>الباسورد بيتحفظ إزاي؟</h3>
+  <p>عمرنا ما بنحفظ الباسورد نفسه. بنحطه في "خلاط" رياضي (اسمه PBKDF2) بيطلع كلام ملخبط، والخلاط ده مينفعش يترجع لورا. ولما حد يدخل، بنحط الباسورد اللي كتبه في نفس الخلاط ونقارن النتيجتين.</p>
+  <p>وكمان بنضيف لكل مستخدم "ملح" (salt) عشوائي قبل الخلط، فلو اتنين ليهم نفس الباسورد، الكلام الملخبط بتاعهم بيطلع مختلف.</p>
+  <div class="say">We never store passwords. We store a salted PBKDF2 hash; at login we hash what was typed with the same salt and compare the two hashes.</div>
+
+  <h3>القواعد</h3>
+  <ul>
+    <li>اسم مستخدم غلط وباسورد غلط بيطلعوا <strong>نفس الرسالة</strong>، عشان محدش يعرف مين عنده حساب.</li>
+    <li>الحساب الموقوف ميقدرش يدخل: "This account is deactivated".</li>
+    <li>اسم المستخدم من ٣ لـ ٢٠ حرف أو رقم أو . أو _ ، ومينفعش يتكرر، ومبيتغيرش بعد ما يتعمل.</li>
+    <li>الباسورد ٦ حروف على الأقل.</li>
+    <li>آخر أدمن شغال مينفعش يتوقف أو يتغير دوره (وإلا محدش هيقدر يدير النظام).</li>
+    <li>مينفعش توقف حسابك أنت.</li>
+    <li>الموظفين بيتوقفوا ومش بيتمسحوا، عشان التذاكر والسجل بيشاوروا عليهم.</li>
+    <li>لما الأدمن يغير دور حد، بيتعمل أوبجكت جديد من الكلاس الجديد بنفس الـ id والبيانات، ولو الشخص ده داخل دلوقتي، صلاحياته بتتغير فورًا.</li>
+    <li>الباسورد عمره ما بيتكتب في السجل.</li>
+  </ul>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Encapsulation</h4><p>كل خانات <span class="en">User</span> private. مفيش <span class="en">setId</span> ولا <span class="en">setUsername</span>: ده طلب 5b متنفذ جوه الكلاس نفسه. و<span class="en">setFullName</span> بيرفض الاسم الفاضي.</p></div>
+    <div><h4>Inheritance</h4><p>الأدوار الأربعة بيورثوا <span class="en">User</span>، و<span class="en">StationSupervisor</span> بيورث <span class="en">TicketAgent</span>.</p></div>
+    <div><h4>Polymorphism</h4><p><span class="en">getPermissions()</span> مختلفة في كل دور، و<span class="en">can()</span> بتشتغل مع أي دور من غير <span class="en">if</span>.</p></div>
+    <div><h4>Abstraction</h4><p><span class="en">User</span> abstract: مفيش حساب "وخلاص"، لازم يكون دور حقيقي.</p></div>
+    <div><h4>Relationships</h4><p><span class="en">Session</span> ماسك المستخدم الداخل (association). كل الـ services بيستخدموا نفس الـ Session.</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">إزاي منعت المستخدم يغير الـ ID بتاعه؟</span><span class="a">مفيش أصلًا method اسمه setId في أي مكان، والخانة final. الشاشة بتعرضه رمادي، بس حتى الكود نفسه مش هيقدر يغيره.</span><div class="say">There is no setId anywhere and the id field is final, so the ID cannot change even from code.</div></li>
+    <li><span class="q">الصلاحيات بتتشيك فين؟</span><span class="a">في مكانين: القايمة بتخبي، وكل method في الـ service بيبدأ بـ session.require. التاني هو المهم.</span></li>
+    <li><span class="q">ليه User عملته abstract؟</span><span class="a">عشان أي حساب لازم يبقى دور معين، وأجبر كل دور يقول دوره وصلاحياته.</span></li>
+    <li><span class="q">ليه StationSupervisor بيورث TicketAgent مش User؟</span><span class="a">لأن المشرف بيعمل كل حاجة الموظف بيعملها وزيادة. الوراثة بتمنع إننا نكرر نفس القايمة، ولو صلاحيات الموظف اتغيرت المشرف بيتغير معاه.</span><div class="say">A supervisor is a ticket agent plus refunds, so it extends TicketAgent and adds one permission.</div></li>
+    <li><span class="q">ليه رسالة اسم المستخدم الغلط زي الباسورد الغلط؟</span><span class="a">عشان محدش يخمن أسامي المستخدمين الموجودة.</span></li>
+    <li><span class="q">الـ salt ده إيه لازمته؟</span><span class="a">اتنين بنفس الباسورد يطلعلهم تشفير مختلف، والجداول الجاهزة لكسر الباسوردات متنفعش.</span></li>
+    <li><span class="q">إيه اللي في الـ audit log؟</span><span class="a">مين عمل إيه وإمتى: دخول، دخول فاشل، تعديلات، بيع، إرجاع. أبدًا مفيهوش باسورد.</span></li>
+    <li><span class="q">لو عايز موظف الشباك يرجّع تذاكر؟</span><span class="a">أضيف REFUND_TICKETS في getPermissions بتاعة TicketAgent. القايمة هتظهرله الزرار والـ service هيسمح.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>ادخل أدمن، اعمل موظف جديد، اخرج وادخل بيه وشوف القايمة بتاعته. بعدين وقّفه وجرّب تدخل تاني.</li>
+    <li>افتح <span class="en">data/audit.log</span> ولاقي السطر بتاع دخولك واشرح كل خانة فيه.</li>
+  </ul>
+</section>
+
+<!-- ===================== PART 3 ===================== -->
+<section class="block" id="part3" style="--c: var(--p3)">
+  <div class="part-head">
+    <span class="tag">الجزء ٣</span>
+    <h2 class="h"><span class="dot"></span>الإدارة: المحطات والخطوط والقطارات</h2>
+  </div>
+  <p>طلبات الكلية في جزءك (Module 1):</p>
+  <ul>
+    <li><strong>1a</strong> — الأدمن يضيف ويعدل ويمسح ويعرض ويدور على المحطات.</li>
+    <li><strong>1b</strong> — الأدمن يعمل الخطوط ويرتب محطات كل خط.</li>
+    <li><strong>1c</strong> — الأدمن يسجل ويعدل رقم القطر (Train ID) وسعته وحالته.</li>
+  </ul>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li><strong>Stations:</strong> جدول فيه رقم المحطة واسمها بالإنجليزي والعربي، الخطوط اللي عليها، هل هي محطة تبادل (Interchange)، وحالتها. فيه بحث وفلتر بالحالة وزراير إضافة وتعديل ومسح.</li>
+    <li><strong>Lines:</strong> الخطوط بلونها وعدد محطاتها و"من فين لفين". التعديل بيفتح فورم فيها قايمة المحطات بالترتيب، وزراير: Add و Remove و Move up و Move down.</li>
+    <li><strong>Trains:</strong> القطارات: الـ Train ID، السعة، والحالة (شغال / في الصيانة / خرج من الخدمة).</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>Station</code>، <code>StationStatus</code></td><td>المحطة (اسم إنجليزي وعربي) وحالتها مفتوحة/مقفولة.</td></tr>
+    <tr><td><code>Line</code></td><td>الخط: اسم، لون، وقايمة محطات بالترتيب.</td></tr>
+    <tr><td><code>Train</code>، <code>TrainStatus</code></td><td>القطر وحالته.</td></tr>
+    <tr><td><code>StationRepository</code>، <code>LineRepository</code>، <code>TrainRepository</code></td><td>مخازن الملفات التلاتة.</td></tr>
+    <tr><td><code>StationService</code>، <code>LineService</code>، <code>TrainService</code></td><td>القواعد: أسماء متتكررش، مسح آمن، محطات التبادل.</td></tr>
+    <tr><td><code>StationsScreen</code>، <code>StationFormDialog</code></td><td>شاشة المحطات وفورمها.</td></tr>
+    <tr><td><code>LinesScreen</code>، <code>LineFormDialog</code></td><td>شاشة الخطوط وفورم ترتيب المحطات.</td></tr>
+    <tr><td><code>TrainsScreen</code>، <code>TrainFormDialog</code></td><td>شاشة القطارات وفورمها.</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: الخط ماسك محطاته</h3>
+  <pre class="code"><span class="k">public class</span> Line <span class="k">extends</span> Entity {
+    <span class="k">private</span> List&lt;Station&gt; stations = <span class="k">new</span> ArrayList&lt;&gt;();
+
+    <span class="k">public</span> List&lt;Station&gt; getStations() {
+        <span class="k">return</span> Collections.unmodifiableList(stations);   <span class="c">// read-only copy for the outside</span>
+    }
+
+    <span class="k">public void</span> setStations(List&lt;Station&gt; stations) {
+        List&lt;Station&gt; copy = <span class="k">new</span> ArrayList&lt;&gt;();
+        <span class="k">for</span> (Station station : stations) {
+            <span class="k">if</span> (copy.contains(station)) {
+                <span class="k">throw new</span> ValidationException(<span class="s">"A station can appear only once on a line"</span>);
+            }
+            copy.add(station);
+        }
+        <span class="k">this</span>.stations = copy;
+    }
+}</pre>
+  <div class="explain">
+    <div><b>getStations()</b> = بيدّي اللي بره نسخة "للقراية بس". محدش يقدر يزود محطة من وراه.</div>
+    <div><b>setStations(...)</b> = الطريقة الوحيدة لتغيير المحطات، وبتتأكد إن مفيش محطة متكررة. ده encapsulation.</div>
+    <div><b>this.stations = copy</b> = بنحفظ نسخة إحنا عاملينها، مش القايمة اللي اتبعتت لنا.</div>
+  </div>
+  <h3>ليه "السادات" محطة تبادل؟</h3>
+  <p>محطة السادات هي <strong>أوبجكت واحد</strong>، والخط الأول والخط التاني الاتنين ماسكين نفس الأوبجكت ده في قوايمهم. فالبرنامج يعد: المحطة دي على كام خط؟ لو اتنين أو أكتر يبقى Interchange. مش متخزنة كمعلومة لوحدها، فعمرها ما تبقى غلط.</p>
+  <p>ولو غيرت اسم المحطة، بيتغير في كل الخطوط في نفس اللحظة، لأنهم كلهم بيشاوروا على نفس المحطة. ده اسمه <strong>Aggregation</strong>: الخط "بيجمع" محطات ليها حياة لوحدها.</p>
+
+  <h3>رقم القطر: ليه فيه اتنين؟</h3>
+  <p>الكلية عايزة الأدمن "يعدل الـ Train ID". بس عندنا قاعدة إن رقم أي سجل (id) مبيتغيرش أبدًا، لأن الرحلات بتشاور عليه. فالقطر عنده:</p>
+  <ul>
+    <li><span class="en">id</span> مثل <span class="en">TRN-001</span>: داخلي، ثابت، الرحلات بتشاور عليه.</li>
+    <li><span class="en">code</span> مثل <span class="en">T-101</span>: ده اللي الموظفين بيشوفوه باسم "Train ID" ويقدروا يعدلوه.</li>
+  </ul>
+
+  <h3>القواعد</h3>
+  <ul>
+    <li>اسم المحطة مايتكررش (حتى لو الاختلاف حروف كبيرة وصغيرة أو مسافات).</li>
+    <li>محطة على خط مينفعش تتمسح: "اشيلها من الخط الأول أو اقفلها". ومحطة اتباع لها تذاكر قبل كده مينفعش تتمسح.</li>
+    <li>الخط لازم يبقى فيه محطتين على الأقل، ومفيش محطة مرتين على نفس الخط، واللون شكله زي <span class="en">#1A2B3C</span>.</li>
+    <li>Train ID مايتكررش وبيتحفظ بحروف كبيرة، والسعة من ١ لـ ٣٠٠٠.</li>
+    <li>قطر عنده رحلات لسه مخلصتش مينفعش يدخل صيانة. وقطر اشتغل قبل كده مينفعش يتمسح ("خليه Retired").</li>
+    <li>خط عليه رحلات مينفعش يتمسح.</li>
+    <li>لو أي قاعدة اترفضت، مفيش حاجة بتتغير خالص.</li>
+  </ul>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Encapsulation</h4><p>قايمة محطات الخط private، و<span class="en">getStations</span> بترجع نسخة للقراية بس، والتغيير بس عن طريق <span class="en">setStations</span> اللي بيتشيك.</p></div>
+    <div><h4>Inheritance</h4><p><span class="en">Station</span> و<span class="en">Line</span> و<span class="en">Train</span> بيورثوا <span class="en">Entity</span>. والشاشات التلاتة بيورثوا <span class="en">CrudScreen</span>، والفورمات بيورثوا <span class="en">FormDialog</span>.</p></div>
+    <div><h4>Polymorphism</h4><p><span class="en">CrudScreen</span> بينادي <span class="en">loadItems</span> و<span class="en">buildColumns</span>: كل شاشة بتجاوب بطريقتها، ونفس الكود يملا جدول محطات أو جدول قطارات.</p></div>
+    <div><h4>Abstraction</h4><p>الشاشات مبتعرفش البيانات متخزنة إزاي؛ بتكلم الـ Service وخلاص.</p></div>
+    <div><h4>Relationships</h4><p>الخط بيعمل <strong>aggregation</strong> للمحطات: المحطة عايشة لوحدها وممكن تبقى على أكتر من خط، ولو الخط اتمسح المحطات بتفضل.</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">البرنامج بيعرف إن المحطة تبادل إزاي؟</span><span class="a">بيعد الخطوط اللي فيها المحطة دي. اتنين أو أكتر يبقى Interchange.</span><div class="say">It counts the lines that contain the station; two or more means it is an interchange.</div></li>
+    <li><span class="q">ليه مينفعش تمسح محطة على خط؟</span><span class="a">الخط هيشاور على محطة مش موجودة. فبنطلب يشيلها من الخط الأول أو يقفلها.</span></li>
+    <li><span class="q">إيه الفرق بين Aggregation و Composition هنا؟</span><span class="a">الخط والمحطات aggregation: المحطة ليها حياة لوحدها ومشتركة. لكن المشوار (Journey) وأجزاؤه composition: الأجزاء معمولة للمشوار ده بس.</span></li>
+    <li><span class="q">محطات الخط بتتحفظ إزاي؟</span><span class="a">أرقام المحطات بالترتيب مفصولة بفاصلة. ولما الملف يتقري، كل رقم بيتحول لأوبجكت المحطة، وعشان كده المحطات بتتقري قبل الخطوط.</span></li>
+    <li><span class="q">لو lines.txt فيه رقم محطة مش موجودة؟</span><span class="a">البرنامج بيوقف ويقول "lines.txt line N: unknown station ...".</span></li>
+    <li><span class="q">إزاي عملت فرع خط ٣ لجامعة القاهرة؟</span><span class="a">خط تاني بيشارك خط ٣ في المحطات من عدلي منصور لحد الكيت كات.</span></li>
+    <li><span class="q">المحطات دي جبتها منين؟</span><span class="a">من قايمة محطات مترو القاهرة المنشورة، واتراجعت محطة محطة على مصدر تاني.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>ضيف محطة اسمها Test Square، حطها على الخط التاني وطلّعها لفوق مرتين، وبص على <span class="en">data/lines.txt</span>: هتلاقي رقمها في المكان الجديد.</li>
+    <li>حاول تمسح السادات واقرا الرسالة. حاول تحط T-101 في الصيانة واقرا الرسالة.</li>
+  </ul>
+</section>
+
+<!-- ===================== PART 4 ===================== -->
+<section class="block" id="part4" style="--c: var(--p4)">
+  <div class="part-head">
+    <span class="tag">الجزء ٤</span>
+    <h2 class="h"><span class="dot"></span>جدول الرحلات</h2>
+  </div>
+  <p>طلبات الكلية في جزءك (Module 2):</p>
+  <ul>
+    <li><strong>2a</strong> — المسموح لهم يعملوا رحلات بمعاد طلوع ومعاد وصول.</li>
+    <li><strong>2b</strong> — يعدلوا الرحلات أو يلغوها.</li>
+    <li><strong>2c</strong> — النظام يتابع حالة الرحلة: Scheduled (متجدولة)، Delayed (متأخرة)، Cancelled (ملغية)، Completed (خلصت).</li>
+    <li><strong>2d</strong> — النظام يكتشف لو نفس القطر متحط في رحلتين في نفس الوقت.</li>
+  </ul>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li><strong>Trips:</strong> جدول الرحلات: الخط بلونه، "من فين لفين"، القطر، الطلوع، الوصول (ولو متأخرة يظهر +١٠ دقايق مثلًا)، وشارة الحالة ملونة. فوقه فلاتر: اليوم، الخط، الحالة، وبحث.</li>
+    <li>مسؤول التشغيل والأدمن بيشوفوا زرار <strong>New trip</strong> وتحت الجدول: Edit و Delay و Complete و Cancel trip. موظف الشباك بيشوف نفس الجدول من غير ولا زرار.</li>
+    <li><strong>فورم الرحلة:</strong> تختار الخط والاتجاه والقطر واليوم ومعاد الطلوع، ومعاد الوصول بيتكتب لوحده (عدد المحطات × ٣ دقايق) وتقدر تغيره.</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>Trip</code></td><td>رحلة واحدة: القطر، الخط، الاتجاه، الطلوع، الوصول، الحالة، والتأخير.</td></tr>
+    <tr><td><code>TripStatus</code></td><td>الحالات الأربعة، ومين ينفع يتحول لمين.</td></tr>
+    <tr><td><code>Direction</code></td><td>الاتجاه: FORWARD من أول محطة لآخر محطة، BACKWARD العكس.</td></tr>
+    <tr><td><code>TripRepository</code></td><td>مخزن <span class="en">trips.txt</span>، ويقدر يجيب رحلات قطر معين أو خط معين.</td></tr>
+    <tr><td><code>TripService</code></td><td>كل قواعد الجدول، وكاشف التعارض (conflict detector).</td></tr>
+    <tr><td><code>ScheduleConflictException</code></td><td>الإنذار لما القطر يبقى مشغول، ومعاه الرحلة اللي بيتعارض معاها.</td></tr>
+    <tr><td><code>TripsScreen</code>، <code>TripFormDialog</code></td><td>شاشة الجدول وفورم الرحلة (وجواها فورم صغيرة للتأخير).</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: إمتى رحلتين يتعارضوا؟</h3>
+  <p>فكر في حجز قاعة أفراح: حجز من ٦ لـ ٨ وحجز من ٧ لـ ٩ بيتعارضوا. القاعدة البسيطة: <strong>رحلتين يتعارضوا لو كل واحدة بتبدأ قبل ما التانية تخلص</strong>. وبنزود ٥ دقايق راحة للقطر بين الرحلتين.</p>
+  <pre class="code"><span class="k">public boolean</span> overlaps(LocalDateTime otherDeparture, LocalDateTime otherArrival, <span class="k">int</span> gapMinutes) {
+    <span class="k">return</span> departure.isBefore(otherArrival.plusMinutes(gapMinutes))
+        &amp;&amp; otherDeparture.isBefore(getEffectiveArrival().plusMinutes(gapMinutes));
+}</pre>
+  <div class="explain">
+    <div><b>departure.isBefore(...)</b> = رحلتي بتبدأ قبل ما التانية تخلص (+ وقت الراحة)؟</div>
+    <div><b>&amp;&amp;</b> = "و": لازم الشرطين يبقوا صح.</div>
+    <div><b>getEffectiveArrival()</b> = الوصول الحقيقي = الوصول المتخطط + التأخير.</div>
+  </div>
+  <pre class="code"><span class="k">public</span> List&lt;Trip&gt; findConflicts(Train train, LocalDateTime departure, LocalDateTime arrival, String ignoreTripId) {
+    List&lt;Trip&gt; conflicts = <span class="k">new</span> ArrayList&lt;&gt;();
+    <span class="k">for</span> (Trip other : trips.findByTrain(train)) {                 <span class="c">// only trips of the SAME train</span>
+        <span class="k">if</span> (other.getId().equals(ignoreTripId) || other.getStatus() == TripStatus.CANCELLED) {
+            <span class="k">continue</span>;                                              <span class="c">// skip itself and cancelled trips</span>
+        }
+        <span class="k">if</span> (other.overlaps(departure, arrival, TURNAROUND_GAP_MINUTES)) {
+            conflicts.add(other);
+        }
+    }
+    <span class="k">return</span> conflicts;
+}</pre>
+  <div class="explain">
+    <div>بنلف على رحلات <strong>نفس القطر بس</strong> — قطر تاني في نفس الوقت مش مشكلة.</div>
+    <div><b>continue</b> = "سيب دي وروح للي بعدها": الرحلة الملغية مبتعطلش حد، والرحلة اللي بنعدلها مبتتعارضش مع نفسها.</div>
+    <div>لو القايمة طلعت مش فاضية، <span class="en">create</span> بيرمي <span class="en">ScheduleConflictException</span> ومبيحفظش حاجة، والفورم بتعرض: "Train T-101 is already on trip TRP-… (06:00–07:42, Line 1). Pick another train or time."</div>
+  </div>
+  <div class="say">Two trips of the same train conflict when each starts before the other ends, plus a five-minute turnaround gap. Cancelled trips never count.</div>
+
+  <h3>الحالات ومين يتحول لمين</h3>
+  <div class="tbl"><table>
+    <tr><th>الحالة دلوقتي</th><th>ينفع تبقى</th></tr>
+    <tr><td>Scheduled</td><td>Delayed أو Completed أو Cancelled</td></tr>
+    <tr><td>Delayed</td><td>Delayed تاني (تأخير جديد) أو Completed أو Cancelled</td></tr>
+    <tr><td>Completed / Cancelled</td><td>ولا حاجة — دي نهائية</td></tr>
+  </table></div>
+  <p>القاعدة دي مكتوبة في مكان واحد بس (<span class="en">TripStatus.canChangeTo</span>)، والرحلة مالهاش "setStatus" عادي؛ الطريقة الوحيدة هي <span class="en">changeStatus</span> اللي بيسأل القاعدة الأول.</p>
+
+  <h3>القواعد</h3>
+  <ul>
+    <li>الوصول لازم يبقى بعد الطلوع. ولو كتبت وصول "أبدر" من الطلوع (٢٣:٥٠ → ٠٠:٢٠) يتفهم إنه اليوم اللي بعده.</li>
+    <li>القطر لازم يكون شغال (Active) عشان يتحط في رحلة.</li>
+    <li>الرحلة اللي خلصت أو اتلغت مبتتعدلش.</li>
+    <li>التأخير من ١ لـ ٢٤٠ دقيقة. التأخير <strong>دايمًا بيتحفظ</strong> (لأنه حصل فعلًا)، ولو بسببه القطر اتعارض مع رحلته الجاية، الشاشة بتنبه بلون أصفر عشان مسؤول التشغيل يتصرف.</li>
+    <li>موظف الشباك يتفرج بس.</li>
+  </ul>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Encapsulation</h4><p>الحالة ملهاش setter. التغيير بس عن طريق <span class="en">changeStatus</span> اللي بيرفض أي تحويل مش مسموح.</p></div>
+    <div><h4>Inheritance</h4><p><span class="en">Trip extends Entity</span>، <span class="en">TripsScreen extends CrudScreen</span>، <span class="en">ScheduleConflictException extends MetroException</span>.</p></div>
+    <div><h4>Polymorphism</h4><p><span class="en">TripsScreen</span> بيكتب نسخته من <span class="en">rowActions</span> و<span class="en">canAdd</span>: نفس الشاشة تدي المسؤول زراير وتدي الموظف جدول للقراية. والفورم بتمسك إنذار التعارض كـ <span class="en">MetroException</span> عادي.</p></div>
+    <div><h4>Abstraction</h4><p>كل قواعد الحالات جوه <span class="en">TripStatus</span>: محدش تاني محتاج يعرف الجدول بتاعها.</p></div>
+    <div><h4>Relationships</h4><p>الرحلة <strong>association</strong> مع قطر واحد وخط واحد: بتستخدمهم ومش بتملكهم، وقطر واحد بيعمل رحلات كتير.</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">إزاي بتكتشف التعارض؟</span><span class="a">لنفس القطر بس: رحلتين يتعارضوا لو كل واحدة بتبدأ قبل ما التانية تخلص، مع ٥ دقايق راحة. والملغية مبتتحسبش.</span></li>
+    <li><span class="q">ليه الـ ٥ دقايق دي؟</span><span class="a">القطر اللي وصل ١٠:٤٥ مينفعش يطلع رحلة تانية ١٠:٤٥ بالظبط، محتاج شوية وقت.</span></li>
+    <li><span class="q">لما رحلة تتأخر بيحصل إيه؟</span><span class="a">حالتها تبقى Delayed ووصولها الحقيقي يتأخر. التأخير بيتحفظ دايمًا، ولو عمل تعارض مع الرحلة الجاية الشاشة بتنبه.</span><div class="say">A delay is a fact, so it is always saved; if it now clashes with the train's next trip, the screen warns the controller.</div></li>
+    <li><span class="q">ليه الرحلة اللي خلصت مبتتعدلش؟</span><span class="a">عشان التاريخ يفضل صح. Completed و Cancelled حالات نهائية.</span></li>
+    <li><span class="q">الرحلة اللي بعد نص الليل بتتحسب إزاي؟</span><span class="a">الأوقات متخزنة تاريخ + ساعة، مش ساعة بس، فـ ٢٣:٥٠ لـ ٠٠:٢٠ اليوم اللي بعده بتتقارن صح.</span></li>
+    <li><span class="q">موظف الشباك بيشوف إيه في الرحلات؟</span><span class="a">نفس الجدول من غير زراير، لأن canAdd و rowActions بيتشيكوا على MANAGE_TRIPS. والـ service بيرفض برضه لو حاول.</span></li>
+    <li><span class="q">البيانات التجريبية اتعملت من غير تعارضات إزاي؟</span><span class="a">لكل قطر بنفتكر هو هيفضى إمتى، وكل رحلة بتاخد أول قطر فاضي. وفيه اختبار بيتأكد إن مفيش رحلتين لنفس القطر متعارضين.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>ادخل controller، اعمل رحلة على الخط الأول بكرة ٠٧:١٥ بالقطر T-101: هتترفض. غيرها لـ ٢٣:١٠: هتتعمل. أخّرها ٢٠ دقيقة وبص على آخر سطر في <span class="en">data/trips.txt</span>.</li>
+    <li>ادخل agent وشوف نفس الشاشة من غير زراير.</li>
+  </ul>
+</section>
+
+<!-- ===================== PART 5 ===================== -->
+<section class="block" id="part5" style="--c: var(--p5)">
+  <div class="part-head">
+    <span class="tag">الجزء ٥</span>
+    <h2 class="h"><span class="dot"></span>التذاكر</h2>
+  </div>
+  <p>طلبات الكلية في جزءك (Module 3):</p>
+  <ul>
+    <li><strong>3a</strong> — الموظفين يسجلوا بيع التذاكر لمحطات ومشاوير.</li>
+    <li><strong>3b</strong> — النظام يحسب السعر حسب المشوار أو عدد المحطات.</li>
+    <li><strong>3c</strong> — النظام يتأكد من التذكرة ويعلّم عليها إنها اتستخدمت.</li>
+    <li><strong>3d</strong> — المسموح لهم يسجلوا إلغاء التذكرة وإرجاع فلوسها لو مسموح.</li>
+  </ul>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li><strong>Sell ticket:</strong> يختار من فين ولفين (أو من الخريطة)، النوع (عادي / طالب / كبير سن)، والعدد. على طول يظهر الطريق: "Line 1: Helwan → Sadat (18)"، "Change at Sadat"، عدد المحطات، والسعر. يدوس Sell يطلع كارت تذكرة شبه المطبوعة.</li>
+    <li><strong>Validate:</strong> يكتب كود التذكرة. <strong>Check</strong> يبص بس، <strong>Validate</strong> يقبلها ويعلّم إنها اتستخدمت. النتيجة يا خضرا "Valid" يا حمرا مع السبب.</li>
+    <li><strong>Refunds</strong> (للمشرف والأدمن): يدور على التذكرة، يشوف ينفع ترجع ولا لأ وليه، ويسجل الإرجاع.</li>
+    <li><strong>Fares</strong> (للأدمن): جدول الأسعار: "لحد ٩ محطات = ٨ جنيه" وهكذا.</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>Ticket</code></td><td>الأب (abstract): المشوار، عدد المحطات، السعر الأساسي، مين باعها وإمتى، حالتها. وبيحسب السعر النهائي.</td></tr>
+    <tr><td><code>StandardTicket</code>، <code>StudentTicket</code>، <code>SeniorTicket</code></td><td>الأنواع: سعر كامل، نص السعر، خصم ٣٠٪.</td></tr>
+    <tr><td><code>TicketType</code>، <code>TicketStatus</code></td><td>النوع، والحالة: Valid (صالحة) / Used (اتستخدمت) / Refunded (اترجعت).</td></tr>
+    <tr><td><code>TicketFactory</code></td><td>المصنع: تديله النوع يعملك التذكرة من الكلاس الصح.</td></tr>
+    <tr><td><code>TicketCheck</code></td><td>نتيجة الفحص: مقبولة ولا لأ، والرسالة، والتذكرة.</td></tr>
+    <tr><td><code>FareTier</code>، <code>FarePolicy</code>، <code>TieredFarePolicy</code>، <code>FareService</code></td><td>جدول الأسعار: سطر واحد، الوعد (interface)، الطريقة اللي بتحسب بالمراحل، وقواعد التعديل.</td></tr>
+    <tr><td><code>TicketService</code></td><td>البيع وحساب السعر والفحص والإرجاع.</td></tr>
+    <tr><td><code>TicketRepository</code>، <code>FareTierRepository</code></td><td>مخازن <span class="en">tickets.txt</span> و <span class="en">fares.txt</span>.</td></tr>
+    <tr><td><code>SellTicketScreen</code>، <code>ValidateTicketScreen</code>، <code>RefundsScreen</code>، <code>FaresScreen</code>، <code>TicketCard</code>، <code>TicketDetails</code></td><td>الشاشات، وكارت التذكرة، وجدول بيانات التذكرة.</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: كل تذكرة تعرف سعرها</h3>
+  <pre class="code"><span class="k">public abstract class</span> Ticket <span class="k">extends</span> Entity {
+    <span class="k">private final double</span> baseFare;           <span class="c">// the full price for this many stops</span>
+
+    <span class="k">public abstract double</span> discountRate();    <span class="c">// each type gives its own answer</span>
+
+    <span class="k">public double</span> getFare() {
+        <span class="k">return</span> Money.round(baseFare * (1 - discountRate()));
+    }
+}
+
+<span class="k">public class</span> StudentTicket <span class="k">extends</span> Ticket {
+    <span class="k">@Override</span>
+    <span class="k">public double</span> discountRate() {
+        <span class="k">return</span> 0.50;                            <span class="c">// half price</span>
+    }
+}</pre>
+  <div class="explain">
+    <div><b>getFare()</b> متكتبة مرة واحدة في الأب: السعر الأساسي × (١ − الخصم).</div>
+    <div><b>discountRate()</b> abstract: كل نوع بيقول خصمه. العادية 0، الطالب 0.50، كبير السن 0.30.</div>
+    <div>مثال: ٢٢ محطة = ١٥ جنيه أساسي. عادية = ١٥، طالب = ٧٫٥٠، كبير سن = ١٠٫٥٠.</div>
+    <div>البيع والتقارير ولوحة البيانات بيقولوا <span class="en">ticket.getFare()</span> وخلاص، من غير ما يعرفوا النوع. ده الـ <strong>polymorphism</strong>.</div>
+  </div>
+  <div class="say">getFare is written once; each ticket subclass answers discountRate differently. Code that holds any Ticket just calls getFare and gets the right price.</div>
+
+  <h3>السعر بيتحسب إزاي؟ (3b)</h3>
+  <ol>
+    <li>الـ <span class="en">RoutePlanner</span> بيلاقي أقصر طريق ويعد المحطات: حلوان لجامعة القاهرة = ٢٢.</li>
+    <li>جدول الأسعار: لحد ٩ = ٨ جنيه، لحد ١٦ = ١٠، لحد ٢٣ = ١٥، لحد ٣٩ = ٢٠. فـ ٢٢ = ١٥ جنيه.</li>
+    <li>نوع التذكرة بيطبق خصمه.</li>
+  </ol>
+  <p>التذكرة بتحتفظ بعدد المحطات والسعر اللي اتباعت بيه. لو الأدمن غيّر الأسعار بكرة، التذاكر القديمة مش بتتغير، والتقارير تفضل صح.</p>
+
+  <h3>القواعد</h3>
+  <ul>
+    <li>مفيش تذكرة لمحطة مقفولة أو منها، ولا بين محطتين مفيش بينهم طريق.</li>
+    <li>العدد من ١ لـ ٢٠، وكل تذكرة سطر لوحدها بكود لوحدها.</li>
+    <li>التذكرة تتقبل على البوابة <strong>مرة واحدة بس</strong>، و<strong>في يوم بيعها بس</strong> (الساعة ١٢ بالليل تبقى منتهية).</li>
+    <li>ترتيب الرفض: مش موجودة ← اتستخدمت قبل كده (وإمتى) ← اترجعت ← منتهية.</li>
+    <li>الإرجاع: تذكرة متستخدمتش واتباعت النهارده، بفلوسها كاملة، ومرة واحدة. المشرف والأدمن بس.</li>
+    <li>التذكرة اللي اترجعت مبتتمسحش: بتفضل متسجلة إنها Refunded ومين رجعها وإمتى.</li>
+    <li>لازم يفضل في جدول الأسعار سطر واحد على الأقل.</li>
+  </ul>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Polymorphism</h4><p><span class="en">getFare()</span> بتنادي <span class="en">discountRate()</span> اللي كل نوع بيجاوبه بطريقته. لو عايز تذكرة أطفال: كلاس جديد بس، ومفيش حاجة تانية تتغير.</p></div>
+    <div><h4>Abstraction</h4><p><span class="en">Ticket</span> abstract. و<span class="en">FarePolicy</span> interface: الـ service بيسأل "سعر ٢٢ محطة كام؟" من غير ما يعرف الحساب بيتعمل إزاي.</p></div>
+    <div><h4>Inheritance</h4><p>التلات أنواع بيورثوا <span class="en">Ticket</span>، و<span class="en">TieredFarePolicy</span> بينفذ <span class="en">FarePolicy</span>.</p></div>
+    <div><h4>Encapsulation</h4><p>عدد المحطات والسعر الأساسي والبايع ووقت البيع <span class="en">final</span>. والحالة تتغير بس عن طريق <span class="en">markUsed</span> و<span class="en">refund</span> اللي بيطبقوا القواعد.</p></div>
+    <div><h4>Relationships</h4><p>التذكرة مرتبطة بمحطتين (من / لـ). و<span class="en">TicketService</span> بيستخدم <span class="en">RoutePlanner</span> و<span class="en">FareService</span>.</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">السعر بيتحسب إزاي؟</span><span class="a">أقصر طريق ← عدد المحطات ← سعر المرحلة من جدول الأسعار ← خصم نوع التذكرة.</span><div class="say">Shortest route gives the number of stops, the fare table gives the base fare, and the ticket type applies its discount.</div></li>
+    <li><span class="q">فين الـ polymorphism هنا؟</span><span class="a">getFare بتنادي discountRate، وكل نوع تذكرة بيرجع خصم مختلف. الكود اللي ماسك Ticket بياخد السعر الصح من غير ما يسأل عن النوع.</span></li>
+    <li><span class="q">ليه مش كلاس واحد فيه if على النوع؟</span><span class="a">كل نوع جديد كان هيحتاج تعديل if في كذا مكان. بالوراثة، النوع الجديد = كلاس جديد بس.</span></li>
+    <li><span class="q">ليه FarePolicy interface؟</span><span class="a">عشان لو عايزين طريقة تسعير تانية (سعر ثابت، مناطق) نعمل كلاس جديد من غير ما نلمس البيع.</span></li>
+    <li><span class="q">إيه الفرق بين Check و Validate؟</span><span class="a">Check بيبص بس. Validate بيقبل التذكرة الصالحة ويعلّم إنها اتستخدمت ويحفظ.</span></li>
+    <li><span class="q">مين يقدر يرجّع، وإمتى؟</span><span class="a">المشرف والأدمن، لتذكرة متستخدمتش واتباعت النهارده، بالفلوس كاملة.</span></li>
+    <li><span class="q">التذكرة المرجعة بتتمسح؟</span><span class="a">لأ، بتفضل بحالة Refunded ومين رجعها وإمتى، وتقرير الإيرادات بيخصمها في يوم الإرجاع.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>ادخل agent، بيع تذكرتين من حلوان لجامعة القاهرة، وبص على آخر سطرين في <span class="en">data/tickets.txt</span>. اعمل Validate لواحدة مرتين.</li>
+    <li>ادخل supervisor ورجّع التانية. حاول ترجّعها تاني واقرا الرسالة.</li>
+  </ul>
+</section>
+
+<!-- ===================== PART 6 ===================== -->
+<section class="block" id="part6" style="--c: var(--p6)">
+  <div class="part-head">
+    <span class="tag">الجزء ٦</span>
+    <h2 class="h"><span class="dot"></span>التقارير</h2>
+  </div>
+  <p>طلبات الكلية في جزءك (Module 4):</p>
+  <ul>
+    <li><strong>4a</strong> — الأدمن يعمل تقارير عن الرحلات حسب التاريخ والخط والحالة.</li>
+    <li><strong>4b</strong> — الأدمن يشوف عدد التذاكر المبيوعة لكل مشوار.</li>
+    <li><strong>4c</strong> — النظام يلخص الإيرادات في فترة يختارها.</li>
+  </ul>
+
+  <h3>المستخدم بيشوف إيه</h3>
+  <ul>
+    <li>في كل تقرير: من تاريخ لتاريخ (افتراضيًا آخر ٧ أيام)، زرار <strong>Generate</strong>، وزرار <strong>Export CSV</strong> اللي بيحفظ التقرير ملف يفتح في Excel.</li>
+    <li><strong>Trip report:</strong> فلتر بالخط والحالة، ٤ مربعات بعدد كل حالة، ورسم دايرة (pie chart) بنفس ألوان الحالات، والجدول.</li>
+    <li><strong>Ticket report:</strong> عدد التذاكر لكل مشوار، الأكتر فوق، ورسم أعمدة لأكتر ٨ مشاوير.</li>
+    <li><strong>Revenue report:</strong> المبيعات، المرتجع، وصافي الإيراد بأرقام كبيرة، ورسم أعمدة لصافي كل يوم، وجدول بآخره سطر "Total".</li>
+    <li>لو مفيش بيانات في الفترة: "No data for these dates."</li>
+  </ul>
+
+  <h3>الكلاسات بتاعتك</h3>
+  <div class="tbl"><table>
+    <tr><th>الكلاس</th><th>شغلته ببساطة</th></tr>
+    <tr><td><code>Report</code></td><td>الأب (abstract) لأي تقرير: الفترة، الأعمدة، الصفوف، والتصدير لـ CSV.</td></tr>
+    <tr><td><code>TripReport</code></td><td>الرحلات حسب الفترة والخط والحالة، وعدد كل حالة.</td></tr>
+    <tr><td><code>TicketReport</code>، <code>JourneyCount</code></td><td>التذاكر لكل مشوار، والصف الواحد (من، لـ، عدد، فلوس).</td></tr>
+    <tr><td><code>RevenueReport</code>، <code>DayRevenue</code></td><td>الإيرادات يوم بيوم، والصف الواحد (مبيعات، مرتجع، صافي).</td></tr>
+    <tr><td><code>ReportService</code></td><td>بيعمل التقارير للأدمن بس، ويسجل في السجل إن تقرير اتعمل.</td></tr>
+    <tr><td><code>ReportScreen</code></td><td>الأب لشاشات التقارير: التواريخ، الزراير، الجدول، ورسالة "مفيش بيانات".</td></tr>
+    <tr><td><code>TripReportScreen</code>، <code>TicketReportScreen</code>، <code>RevenueReportScreen</code></td><td>كل شاشة بتضيف فلاترها وأرقامها ورسمها.</td></tr>
+  </table></div>
+
+  <h3>أهم كود في جزءك: تصدير واحد لكل التقارير</h3>
+  <pre class="code"><span class="k">public abstract class</span> Report {
+    <span class="k">public abstract</span> List&lt;String&gt; getColumns();   <span class="c">// the column names</span>
+    <span class="k">public abstract</span> List&lt;String[]&gt; getRows();    <span class="c">// the rows, as text</span>
+
+    <span class="k">public final void</span> exportCsv(Path file) {
+        <span class="c">// write the column names, then one line per row -- works for ANY report</span>
+        text.append(csvLine(getColumns())).append(<span class="s">'\n'</span>);
+        <span class="k">for</span> (String[] row : getRows()) {
+            text.append(csvLine(row)).append(<span class="s">'\n'</span>);
+        }
+        ...
+    }
+}</pre>
+  <div class="explain">
+    <div><b>getColumns()</b> و <b>getRows()</b> abstract: كل تقرير بيقول أعمدته وصفوفه.</div>
+    <div><b>exportCsv</b> متكتبة مرة واحدة وبتشتغل مع التلات تقارير، لأنها بتستخدم بس الاتنين دول. ده الـ polymorphism.</div>
+    <div><b>final</b> هنا معناها إن محدش من الولاد يقدر يغير طريقة التصدير.</div>
+    <div>نفس الفكرة في الشاشة: <span class="en">ReportScreen</span> بيبني الجدول من <span class="en">getColumns</span> و<span class="en">getRows</span> لأي تقرير.</div>
+  </div>
+  <div class="say">Report is abstract with getColumns and getRows; exportCsv is written once and works for every report because it only uses those two methods.</div>
+
+  <h3>الإيرادات بتتحسب إزاي؟ (4c)</h3>
+  <ul>
+    <li>بنعمل صف لكل يوم في الفترة، حتى الأيام اللي محصلش فيها حاجة (تطلع أصفار).</li>
+    <li>كل تذكرة: سعرها بيتحسب <strong>مبيعات</strong> في يوم بيعها — حتى لو اترجعت بعد كده.</li>
+    <li>ولو اترجعت: سعرها بيتحسب <strong>مرتجع</strong> في يوم الإرجاع.</li>
+    <li>الصافي = المبيعات − المرتجع.</li>
+  </ul>
+  <p>مثال: يوم فيه ٥ تذاكر بـ ٣٦ جنيه، وواحدة منهم اترجعت بـ ٨ جنيه: مبيعات ٣٦، مرتجع ٨، صافي ٢٨.</p>
+
+  <h3>القواعد</h3>
+  <ul>
+    <li>لازم تاريخ بداية ونهاية، والبداية مينفعش تبقى بعد النهاية.</li>
+    <li>يوم النهاية بيتحسب كله (تذكرة الساعة ١١:٥٩ بالليل داخلة).</li>
+    <li>الرحلة بتتحسب في يوم طلوعها.</li>
+    <li>في تقرير التذاكر، التذاكر المرجعة مش بتتعد، ومن A لـ G غير من G لـ A.</li>
+    <li>الكلام اللي فيه فاصلة أو علامة تنصيص في الـ CSV بيتحط بين علامات تنصيص عشان Excel يفهمه صح.</li>
+    <li>الأدمن بس يقدر يعمل تقارير.</li>
+  </ul>
+
+  <h3>الـ OOP في جزءك</h3>
+  <div class="oop">
+    <div><h4>Abstraction</h4><p><span class="en">Report</span> abstract وفيه <span class="en">getColumns</span> و<span class="en">getRows</span> abstract: كل تقرير لازم يقدمهم.</p></div>
+    <div><h4>Polymorphism</h4><p><span class="en">exportCsv</span> واحدة لكل التقارير، والجدول في الشاشة بيتبني بنفس الطريقة لأي تقرير.</p></div>
+    <div><h4>Inheritance</h4><p>التلات تقارير بيورثوا <span class="en">Report</span> (التحقق من التواريخ والتصدير). والتلات شاشات بيورثوا <span class="en">ReportScreen</span>.</p></div>
+    <div><h4>Encapsulation</h4><p>الصفوف (<span class="en">JourneyCount</span>، <span class="en">DayRevenue</span>) بتتعدل بس من جوه التقرير نفسه، وبره بيقروها بالـ getters.</p></div>
+    <div><h4>Relationships</h4><p>التقرير <strong>composition</strong> مع صفوفه: هو اللي بيعملها وهي بتاعته. وبيستخدم الرحلات والتذاكر من غير ما يملكها.</p></div>
+  </div>
+
+  <h3>لو الدكتور سألك</h3>
+  <ul class="qa">
+    <li><span class="q">ليه Report abstract؟</span><span class="a">كل التقارير ليها فترة وتصدير، بس كل واحد أعمدته وصفوفه مختلفة. الـ abstract methods بتجبر كل تقرير يقدمهم.</span></li>
+    <li><span class="q">إزاي تصدير واحد بيشتغل مع ٣ تقارير؟</span><span class="a">لأنه بيستخدم بس getColumns و getRows، وكل تقرير عنده الاتنين. ده polymorphism.</span></li>
+    <li><span class="q">ليه تقرير الإيرادات بيحسب بيع التذكرة اللي اترجعت؟</span><span class="a">الفلوس دخلت يومها فعلًا. الإرجاع حدث تاني في يومه. والصافي = المبيعات − المرتجع، فكل يوم أرقامه صح.</span><div class="say">A sale counts on the day it was sold and a refund on the day it was refunded; net revenue is sales minus refunds.</div></li>
+    <li><span class="q">ليه تقرير التذاكر مبيعدش المرجعة؟</span><span class="a">لأنه بيعد المشاوير اللي اتباعت، والمرجعة بيعها اتلغى.</span></li>
+    <li><span class="q">لو مفيش بيانات في الفترة؟</span><span class="a">الجدول فاضي ومكتوب "No data for these dates."، والتصدير بيطلع سطر العناوين بس.</span></li>
+    <li><span class="q">الرسومات اتعملت إزاي؟</span><span class="a">بالـ PieChart و BarChart بتوع JavaFX نفسها، بتتملا من كائنات التقرير.</span></li>
+    <li><span class="q">لو عايز تضيف تقرير رابع؟</span><span class="a">كلاس يورث Report ويكتب getColumns و getRows، وشاشة تورث ReportScreen، وزرار في القايمة. التصدير والجدول بيشتغلوا لوحدهم.</span></li>
+  </ul>
+  <h3>جرّب بنفسك</h3>
+  <ul>
+    <li>ادخل admin، افتح Trip report واختار الحالة Delayed واضغط Generate. بعدين خلي "From" بعد "To" واقرا الرسالة.</li>
+    <li>اعمل Export CSV لتقرير الإيرادات وافتحه في Excel أو Notepad.</li>
+  </ul>
+</section>
+
+<!-- ===================== DISCUSSION DAY ===================== -->
+<section class="block newpage" id="day">
+  <h2 class="h"><span class="dot"></span>يوم المناقشة</h2>
+  <h3>تشغيل البرنامج على أي لابتوب</h3>
+  <ol>
+    <li>نزّل <strong>JDK 25</strong> (من Oracle أو Adoptium) وسطّبه. مش محتاج حاجة تانية.</li>
+    <li>نزّل المشروع من GitHub: <span class="en">github.com/moazmo/metro-management-system</span> ← زرار Code ← Download ZIP، وفكه.</li>
+    <li>افتح الفولدر، واكتب في PowerShell: <span class="en">.\mvnw.cmd javafx:run</span> (أول مرة بياخد شوية عشان بينزل الأدوات).</li>
+    <li>ادخل بأي حساب: <span class="en">admin</span> أو <span class="en">controller</span> أو <span class="en">agent</span> أو <span class="en">supervisor</span>، والباسورد <span class="en">metro123</span>.</li>
+  </ol>
+  <div class="tip">قبل المناقشة بيوم: امسح فولدر <span class="en">data</span> (أو من قايمة الأدمن: Reset demo data…) عشان تبدأ ببيانات نضيفة، وجرّب البرنامج على اللابتوب اللي هتروح بيه.</div>
+
+  <h3>العرض في ٥ دقايق</h3>
+  <ol>
+    <li><strong>agent</strong>: القايمة قصيرة (الصلاحيات). بيع تذكرة حلوان ← جامعة القاهرة، ووري الطريق والتغيير في السادات والسعر. افتح <span class="en">tickets.txt</span>.</li>
+    <li>Validate للتذكرة مرتين: أول مرة خضرا، التانية حمرا "Already used".</li>
+    <li><strong>controller</strong>: اعمل رحلة متعارضة واتفرج عليها بتترفض، وأخّر رحلة.</li>
+    <li><strong>admin</strong>: بحث في المحطات وإضافة محطة، الخطوط، تقرير الإيرادات، والموظفين.</li>
+    <li>اختم بالخريطة والطريق منوّر.</li>
+  </ol>
+  <p>السيناريو الكامل خطوة بخطوة لكل طلب من طلبات الكلية موجود في <span class="en">docs/demo-script.md</span>.</p>
+
+  <h3>الدرجات وفين في المشروع</h3>
+  <div class="tbl"><table>
+    <tr><th>البند</th><th>الدرجة</th><th>هتوريه إزاي</th></tr>
+    <tr><td>OOP Design</td><td>٥</td><td>صفحة "الـ OOP بالبلدي" + أمثلة كل جزء: User والأدوار، Ticket والأنواع، FileRepository، Report</td></tr>
+    <tr><td>كل المطلوب</td><td>٤</td><td>القايمة متقسمة بنفس أسماء أجزاء الكلية، وكل سطر في السيناريو</td></tr>
+    <tr><td>الشغل صح</td><td>٢</td><td>٢٨٩ اختبار شغالين، ورسائل واضحة لما حاجة تترفض</td></tr>
+    <tr><td>الصلاحيات</td><td>٢</td><td>ادخل بالأربع حسابات: كل واحد قايمته مختلفة، والـ service بيرفض برضه</td></tr>
+    <tr><td>الملفات</td><td>٢</td><td>افتح ملف قبل وبعد: إضافة (بيع تذكرة)، تعديل (Validate)، مسح (محطة)</td></tr>
+    <tr><td>الشغل الفردي</td><td>٥</td><td>كل واحد يشرح جزءه من الدليل ده ويفتح كلاساته</td></tr>
+    <tr><td>واجهة رسومية</td><td>(−٥ لو مفيش)</td><td>عندنا JavaFX كاملة، فاتح وغامق</td></tr>
+  </table></div>
+
+  <h3>نصايح لكل واحد</h3>
+  <ul>
+    <li>اعرف تفتح كلاسات جزءك في VS Code أو IntelliJ وتشاور على: الكلاس، الوراثة (<span class="en">extends</span>)، الـ <span class="en">private</span>، والـ <span class="en">abstract</span> اللي عندك.</li>
+    <li>احفظ جملة الإنجليزي اللي في الصناديق الزرقا لجزءك.</li>
+    <li>لو الدكتور طلب تعديل صغير: غالبًا هيبقى زي "جرّب بنفسك" اللي في جزءك.</li>
+    <li>لو اتسألت عن حاجة مش في جزءك: قول الفكرة العامة من صفحات أول الدليل، ووجّه للزميل المسؤول.</li>
+  </ul>
+</section>
+
+<!-- ===================== GLOSSARY ===================== -->
+<section class="block" id="words">
+  <h2 class="h"><span class="dot"></span>قاموس الكلمات</h2>
+  <div class="tbl"><table>
+    <tr><th>الكلمة</th><th>معناها ببساطة</th></tr>
+    <tr><td><code>class</code></td><td>الاستمارة الفاضية / التصميم</td></tr>
+    <tr><td><code>object</code></td><td>نسخة مليانة بيانات من الكلاس</td></tr>
+    <tr><td><code>field</code></td><td>خانة بيانات جوه الأوبجكت</td></tr>
+    <tr><td><code>method</code></td><td>حاجة الأوبجكت يعرف يعملها</td></tr>
+    <tr><td><code>constructor</code></td><td>اللي بيبني الأوبجكت لحظة ولادته</td></tr>
+    <tr><td><code>new</code></td><td>اعمل أوبجكت جديد</td></tr>
+    <tr><td><code>private</code> / <code>public</code></td><td>مقفول على الكلاس نفسه / متاح للكل</td></tr>
+    <tr><td><code>final</code></td><td>متقفل، مبيتغيرش</td></tr>
+    <tr><td><code>getter</code> / <code>setter</code></td><td>method بيقرا خانة / بيغيرها بعد ما يتشيك</td></tr>
+    <tr><td><code>extends</code></td><td>بيورث من (الابن من الأب)</td></tr>
+    <tr><td><code>super</code></td><td>"الأب بتاعي"</td></tr>
+    <tr><td><code>@Override</code></td><td>"دي نسختي أنا من الـ method ده"</td></tr>
+    <tr><td><code>abstract</code></td><td>ناقص، معمول عشان يتورث بس</td></tr>
+    <tr><td><code>interface</code> / <code>implements</code></td><td>وعد بقايمة أفعال / بينفذ الوعد</td></tr>
+    <tr><td><code>enum</code></td><td>قايمة اختيارات ثابتة</td></tr>
+    <tr><td><code>List</code> / <code>ArrayList</code></td><td>قايمة حاجات</td></tr>
+    <tr><td><code>String</code> / <code>int</code> / <code>double</code> / <code>boolean</code></td><td>نص / رقم صحيح / رقم بكسور / صح أو غلط</td></tr>
+    <tr><td><code>if</code> / <code>for</code> / <code>return</code></td><td>لو / كرر / رجّع الإجابة</td></tr>
+    <tr><td><code>throw</code> / <code>exception</code></td><td>ارمي إنذار / الإنذار نفسه</td></tr>
+    <tr><td><code>try</code> / <code>catch</code></td><td>جرّب / لو حصل إنذار امسكه</td></tr>
+    <tr><td><code>null</code></td><td>مفيش حاجة</td></tr>
+    <tr><td><code>id</code></td><td>الرقم المميز لكل سجل، زي STN-001</td></tr>
+    <tr><td><code>model</code> / <code>service</code> / <code>repository</code> / <code>ui</code></td><td>الحاجات / القواعد / الحفظ / الشاشات</td></tr>
+    <tr><td><code>permission</code> / <code>role</code></td><td>صلاحية / دور</td></tr>
+    <tr><td><code>session</code></td><td>مين داخل دلوقتي</td></tr>
+    <tr><td><code>hash</code> / <code>salt</code></td><td>تشفير مبيترجعش / إضافة عشوائية قبل التشفير</td></tr>
+    <tr><td><code>CSV</code></td><td>ملف جدول بفواصل، بيفتح في Excel</td></tr>
+    <tr><td><code>test</code></td><td>كود بيتأكد إن الكود صح</td></tr>
+    <tr><td><code>GUI</code> / <code>JavaFX</code></td><td>الواجهة الرسومية / المكتبة اللي رسمناها بيها</td></tr>
+  </table></div>
+</section>
+
+<p class="foot">مشروع ٨ — Metro Management System · Programming Language 2 · الكود كله على GitHub: moazmo/metro-management-system</p>
+
+</main>
+</div>

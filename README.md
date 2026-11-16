@@ -13,6 +13,7 @@ role-based staff access.
 - [Design](docs/design.md) — what we are building and how it fits together
 - [Build plan](docs/plan.md) — 27 tasks in 8 phases, from empty project to discussion day
 - [Demo script](docs/demo-script.md) — every specification line, step by step, for discussion day
+- Module guides — [foundation](docs/modules/foundation.md), [users](docs/modules/users.md), [administration](docs/modules/administration.md), [schedule](docs/modules/schedule.md), [tickets](docs/modules/tickets.md), [reports](docs/modules/reports.md)
 
 ## Run it
 
